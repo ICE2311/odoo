@@ -1,28 +1,44 @@
-'use client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { User, Mail } from 'lucide-react';
+import { PageHeader } from '@/components/page-header';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Profile Settings</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Manage your details and contact information.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-              <User className="w-8 h-8" />
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">John Doe</p>
-              <p className="text-sm text-gray-500 flex items-center gap-1"><Mail className="w-3 h-3" /> john@example.com</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="max-w-2xl">
+      <PageHeader
+        title="Profile"
+        subtitle="Manage your account settings"
+      />
+
+      <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-card-foreground mb-2">
+            Email
+          </label>
+          <input
+            type="email"
+            disabled
+            className="w-full px-3 py-2 border border-border rounded-lg bg-muted text-muted-foreground"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-card-foreground mb-2">
+            Full Name
+          </label>
+          <input
+            type="text"
+            disabled
+            className="w-full px-3 py-2 border border-border rounded-lg bg-muted text-muted-foreground"
+          />
+        </div>
+
+        <div className="pt-4 flex gap-3">
+          <Link href="/api/auth/signout">
+            <Button variant="destructive">Sign Out</Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
