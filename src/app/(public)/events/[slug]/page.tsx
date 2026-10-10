@@ -1,4 +1,5 @@
 import { getPublicEventBySlug } from '@/server/data/public/events';
+import { expireStalePaymentHolds } from '@/server/services/holds';
 import { notFound } from 'next/navigation';
 import { getCaller } from '@/server/auth/guards';
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import { Calendar, MapPin, Users, Ticket, CheckCircle2, AlertTriangle, Shield } 
 import { TicketPurchaseForm } from './ticket-purchase-form';
 
 export default async function EventDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
+  await expireStalePaymentHolds().catch(() => {});
   const { slug } = await params;
   const event = await getPublicEventBySlug(slug);
   if (!event) return notFound();

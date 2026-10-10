@@ -1,4 +1,5 @@
 import { getPublicProductBySlug } from '@/server/data/public/shop';
+import { expireStalePaymentHolds } from '@/server/services/holds';
 import { getCaller } from '@/server/auth/guards';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -6,6 +7,7 @@ import { ShoppingBag, ArrowLeft, Tag, AlertTriangle } from 'lucide-react';
 import { AddToCartForm } from '@/components/shop/add-to-cart-form';
 
 export default async function ProductPage(props: { params: Promise<{ slug: string }> }) {
+  await expireStalePaymentHolds().catch(() => {});
   const params = await props.params;
   const product = await getPublicProductBySlug((await params).slug);
   if (!product) return notFound();

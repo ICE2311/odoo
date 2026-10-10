@@ -33,9 +33,14 @@ export async function addVariantToCart(userId: string, variantId: string, qty: n
   });
 }
 
+import { expireStalePaymentHolds } from './holds';
+
 export async function createMerchCheckout(userId: string) {
   const caller = await requireMember();
   if (caller.user.id !== userId) throw new Error("Unauthorized");
+
+  // Release any stale holds before checking variant inventory
+  await expireStalePaymentHolds().catch(() => {});
   
   return await db.transaction(async (tx) => {
     const [cart] = await tx.select().from(carts).where(eq(carts.userId, userId));

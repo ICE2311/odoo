@@ -76,7 +76,7 @@ registerPurpose('merch_order', {
     const orderId = payment.purposeId || payment.purpose_id;
     if (!orderId) return;
     const [order] = await tx.select().from(merchOrders).where(eq(merchOrders.id, orderId));
-    if (!order) return;
+    if (!order || order.status !== 'pending_payment') return;
     await tx.update(merchOrders).set({ status: 'cancelled' }).where(eq(merchOrders.id, order.id));
 
     const items = await tx.select().from(merchOrderItems).where(eq(merchOrderItems.orderId, order.id));

@@ -24,7 +24,7 @@ registerPurpose('ticket_order', {
     if (order && order.status === 'pending') {
       await tx.update(ticketOrders).set({ status: 'cancelled' }).where(eq(ticketOrders.id, order.id));
       await tx.execute(
-        sql`UPDATE events SET seats_held = seats_held - ${order.qty} WHERE id = ${order.eventId}`
+        sql`UPDATE events SET seats_held = GREATEST(0, seats_held - ${order.qty}) WHERE id = ${order.eventId}`
       );
     }
   },

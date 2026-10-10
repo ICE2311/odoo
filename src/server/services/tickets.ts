@@ -5,9 +5,14 @@ import { getCaller } from '@/server/auth/guards';
 import { z } from 'zod';
 import crypto from 'crypto';
 
+import { expireStalePaymentHolds } from './holds';
+
 export async function createTicketOrder(eventId: string, qty: number) {
   const caller = await getCaller();
   if (caller.kind === 'visitor') throw new Error('UNAUTHORIZED');
+
+  // Release any stale holds before checking seat capacity
+  await expireStalePaymentHolds().catch(() => {});
 
   return await db.transaction(async (tx) => {
     // 1. Get event and verify constraints

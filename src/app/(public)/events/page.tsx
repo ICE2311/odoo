@@ -1,9 +1,11 @@
 import { getPublicEvents } from '@/server/data/public/events';
+import { expireStalePaymentHolds } from '@/server/services/holds';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { Calendar, MapPin, Users, Ticket, ArrowRight } from 'lucide-react';
 
 export default async function EventsPage() {
+  await expireStalePaymentHolds().catch(() => {});
   const events = await getPublicEvents();
 
   return (
