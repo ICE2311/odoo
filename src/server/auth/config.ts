@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import EmailProvider from 'next-auth/providers/nodemailer';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { compare } from 'bcryptjs';
 
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
@@ -24,6 +24,7 @@ export const authConfig: NextAuthConfig = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: true,
     }),
     EmailProvider({
       server: {
@@ -106,6 +107,55 @@ export const authConfig: NextAuthConfig = {
     })
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          const { cookies } = await import('next/headers');
+          const cookieStore = await cookies();
+          const linkingUserId = cookieStore.get('skyline_link_user_id')?.value;
+
+          if (linkingUserId) {
+            // Check if this google account is already linked to another user
+            const existing = await db.query.accounts.findFirst({
+              where: and(
+                eq(accounts.provider, 'google'),
+                eq(accounts.providerAccountId, account.providerAccountId)
+              ),
+            });
+
+            if (existing) {
+              cookieStore.delete('skyline_link_user_id');
+              if (existing.userId !== linkingUserId) {
+                return '/account/profile?error=GoogleAlreadyLinkedToAnotherAccount';
+              }
+              return '/account/profile?linked=1';
+            }
+
+            // Link this google account to the requesting user
+            await db.insert(accounts).values({
+              userId: linkingUserId,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state as string | undefined,
+            });
+
+            cookieStore.delete('skyline_link_user_id');
+            user.id = linkingUserId;
+            return '/account/profile?linked=1';
+          }
+        } catch (e) {
+          console.error('[AUTH GOOGLE LINK ERROR]', e);
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;

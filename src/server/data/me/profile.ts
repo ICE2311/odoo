@@ -1,10 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { requireUser } from '@/server/auth/guards';
 import { db } from '@/server/db';
-import { users, memberships } from '@/server/db/schema';
+import { users, memberships, accounts } from '@/server/db/schema';
 
 /**
- * Returns the caller's own profile — only columns needed by the profile page.
+ * Returns the caller's own profile — columns needed by the profile page,
+ * along with connected Google OAuth state.
  * Throws UNAUTHORIZED if not logged in.
  */
 export async function getMyProfile() {
@@ -21,11 +22,35 @@ export async function getMyProfile() {
       college: true,
       emailOptIn: true,
       createdAt: true,
+      passwordHash: true,
     },
   });
 
   if (!user) throw new Error('UNAUTHORIZED');
-  return user;
+
+  const googleAccount = await db.query.accounts.findFirst({
+    where: and(
+      eq(accounts.userId, caller.user.id),
+      eq(accounts.provider, 'google')
+    ),
+    columns: {
+      provider: true,
+      providerAccountId: true,
+    },
+  });
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    studentId: user.studentId,
+    college: user.college,
+    emailOptIn: user.emailOptIn,
+    createdAt: user.createdAt,
+    hasPassword: !!user.passwordHash,
+    hasGoogleLinked: !!googleAccount,
+  };
 }
 
 /**
@@ -52,4 +77,3 @@ export async function getMyAccountDashboard() {
     membershipEndsAt: membership?.endsAt ?? null,
   };
 }
-

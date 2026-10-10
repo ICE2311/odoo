@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useTransition, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   User, Mail, GraduationCap, Phone, Building2, 
   Megaphone, Bell, CheckCircle2, AlertCircle, RefreshCw, 
-  Lock, Shield, Sparkles
+  Lock, Shield, Sparkles, Link as LinkIcon, Unlink
 } from 'lucide-react';
 import { updateProfileAction } from '@/server/actions/profile';
+import { prepareGoogleLinkAction, unlinkGoogleAction } from '@/server/actions/auth-link';
 
 interface ProfileData {
   id: string;
@@ -22,6 +24,8 @@ interface ProfileData {
   college: string | null;
   emailOptIn: boolean;
   createdAt: Date;
+  hasPassword?: boolean;
+  hasGoogleLinked?: boolean;
 }
 
 interface ProfileFormProps {
@@ -31,6 +35,7 @@ interface ProfileFormProps {
 
 export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [name, setName] = useState(profile.name || '');
   const [phone, setPhone] = useState(profile.phone || '');
@@ -41,6 +46,27 @@ export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
   const [isPending, startTransition] = useTransition();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Google Linking State
+  const [isGoogleLinking, setIsGoogleLinking] = useState(false);
+  const [googleSuccessMsg, setGoogleSuccessMsg] = useState<string | null>(null);
+  const [googleErrorMsg, setGoogleErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const linkedParam = searchParams.get('linked');
+    const errorParam = searchParams.get('error');
+
+    if (linkedParam === '1') {
+      setGoogleSuccessMsg('Your Google account has been successfully linked!');
+      router.replace('/account/profile');
+    } else if (errorParam === 'GoogleAlreadyLinkedToAnotherAccount') {
+      setGoogleErrorMsg('This Google account is already linked to another Skyline account. Please use a different Google account.');
+      router.replace('/account/profile');
+    } else if (errorParam) {
+      setGoogleErrorMsg(`Authentication error: ${errorParam}`);
+      router.replace('/account/profile');
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,8 +97,44 @@ export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
     });
   };
 
+  const handleConnectGoogle = async () => {
+    setIsGoogleLinking(true);
+    setGoogleErrorMsg(null);
+    setGoogleSuccessMsg(null);
+
+    try {
+      await prepareGoogleLinkAction();
+      await signIn('google', { callbackUrl: '/account/profile?linked=1' });
+    } catch (err: any) {
+      setIsGoogleLinking(false);
+      setGoogleErrorMsg(err?.message || 'Failed to initialize Google linking.');
+    }
+  };
+
+  const handleUnlinkGoogle = async () => {
+    if (!confirm('Are you sure you want to disconnect your Google account from this student profile?')) {
+      return;
+    }
+
+    setIsGoogleLinking(true);
+    setGoogleErrorMsg(null);
+    setGoogleSuccessMsg(null);
+
+    try {
+      await unlinkGoogleAction();
+      setGoogleSuccessMsg('Google account disconnected successfully.');
+      router.refresh();
+      setTimeout(() => setGoogleSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setGoogleErrorMsg(err?.message || 'Failed to unlink Google account.');
+    } finally {
+      setIsGoogleLinking(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* ─── MAIN PROFILE & PREFERENCES CARD ─── */}
       <Card className="border border-border rounded-3xl shadow-xs overflow-hidden bg-card">
         {/* Profile Card Header */}
         <div className="p-6 sm:p-8 bg-muted/30 border-b border-border">
@@ -149,7 +211,7 @@ export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-primary" /> University Sign-In Email
+                  <Mail className="w-3.5 h-3.5 text-primary" /> Primary Student Account Email
                 </span>
                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                   <Lock className="w-3 h-3" /> Managed via Auth
@@ -162,7 +224,7 @@ export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
                 className="h-11 rounded-xl text-sm bg-muted/50 cursor-not-allowed opacity-80"
               />
               <p className="text-[11px] text-muted-foreground">
-                Your login email is permanently tied to your university student record.
+                Your registered student email is permanently tied to your university student record.
               </p>
             </div>
 
@@ -305,7 +367,112 @@ export function ProfileForm({ profile, role = 'user' }: ProfileFormProps) {
           </div>
         </form>
       </Card>
+
+      {/* ─── CONNECTED ACCOUNTS / GOOGLE INTEGRATION CARD ─── */}
+      <Card className="border border-border rounded-3xl shadow-xs overflow-hidden bg-card">
+        <div className="p-6 sm:p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold text-foreground">
+                  Connected Accounts & Sign-In Methods
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Connect external identities to sign in with 1-click without entering passwords or waiting for magic links.
+              </p>
+            </div>
+          </div>
+
+          {/* Google feedback alerts */}
+          {googleSuccessMsg && (
+            <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{googleSuccessMsg}</span>
+            </div>
+          )}
+
+          {googleErrorMsg && (
+            <div className="p-4 rounded-2xl bg-rose-50 text-rose-900 border border-rose-200 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in-0">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{googleErrorMsg}</span>
+            </div>
+          )}
+
+          {/* Google Account Row */}
+          <div className="p-5 rounded-2xl border border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 rounded-2xl bg-white border border-border/80 flex items-center justify-center shadow-xs shrink-0 p-2">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm text-foreground">Google Account</span>
+                  {profile.hasGoogleLinked ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground border border-border">
+                      Not Linked
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {profile.hasGoogleLinked
+                    ? 'Your Google account is linked. You can sign in using Google on the login page anytime.'
+                    : 'Link your Google ID to enable 1-click Google Sign-In with this student account.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-center pl-15 sm:pl-0">
+              {profile.hasGoogleLinked ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isGoogleLinking}
+                  onClick={handleUnlinkGoogle}
+                  className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 border-border hover:border-destructive/30 transition-colors"
+                >
+                  {isGoogleLinking ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <Unlink className="w-3.5 h-3.5 mr-1.5" />
+                  )}
+                  Disconnect Google
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isGoogleLinking}
+                  onClick={handleConnectGoogle}
+                  className="rounded-xl text-xs font-bold bg-primary hover:bg-primary/95 text-primary-foreground shadow-xs transition-all flex items-center gap-2"
+                >
+                  {isGoogleLinking ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Connecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LinkIcon className="w-3.5 h-3.5" />
+                      <span>Connect Google ID</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
-
