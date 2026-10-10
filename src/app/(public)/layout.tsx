@@ -17,7 +17,6 @@ export default async function PublicLayout({ children }: { children: React.React
           <div className="hidden md:flex gap-8 items-center text-sm font-medium text-foreground">
             <Link href="/events" className="hover:text-primary transition-colors">Events</Link>
             <Link href="/shop" className="hover:text-primary transition-colors">Shop</Link>
-            <Link href="/volunteer" className="hover:text-primary transition-colors">Volunteer</Link>
             <Link href="/announcements" className="hover:text-primary transition-colors">Announcements</Link>
           </div>
 

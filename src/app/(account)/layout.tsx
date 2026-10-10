@@ -140,11 +140,17 @@ export default async function AccountLayout({ children }: { children: React.Reac
                   Door Check-In
                 </Link>
                 <Link
-                  href="/expenses"
+                  href="/account/expenses"
                   className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
                   <Receipt className="w-4 h-4 text-amber-500" />
                   Expenses & Ledger
+                </Link>
+                <Link
+                  href="/account/expenses/new"
+                  className="flex items-center gap-2 pl-9 pr-3.5 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 hover:underline transition-colors"
+                >
+                  <span>+ File Ledger Claim</span>
                 </Link>
               </>
             )}

@@ -14,7 +14,6 @@ import {
   UserCheck,
   Check,
   Sparkles,
-  Receipt,
 } from 'lucide-react';
 import {
   joinFundraiserAction,
@@ -156,12 +155,6 @@ export function VolunteerClient({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Link
-            href="/expenses/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 border border-border bg-card hover:bg-muted text-foreground font-semibold rounded-[var(--radius-md)] text-sm transition-colors shadow-xs"
-          >
-            <Receipt className="w-4 h-4 text-amber-500" /> Submit Expense / Ledger Claim
-          </Link>
           {fundraisers.length > 0 && (
             <button
               onClick={() => {

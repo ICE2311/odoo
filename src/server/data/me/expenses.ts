@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
-import { expenseClaims, events, fundraisers } from '@/server/db/schema';
+import { expenseClaims, events, fundraisers, ledgerEntries } from '@/server/db/schema';
 import { requireUser } from '@/server/auth/guards';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, and } from 'drizzle-orm';
 
 export async function getMyExpenseClaims() {
   const caller = await requireUser();
@@ -32,3 +32,29 @@ export async function getMyExpenseClaims() {
   return claims;
 }
 
+export async function getMySubmittedTakings() {
+  const caller = await requireUser();
+  const takings = await db
+    .select({
+      id: ledgerEntries.id,
+      amountPaise: ledgerEntries.amountPaise,
+      category: ledgerEntries.category,
+      method: ledgerEntries.method,
+      description: ledgerEntries.description,
+      occurredAt: ledgerEntries.occurredAt,
+      fundraiserName: fundraisers.name,
+      eventName: events.title,
+    })
+    .from(ledgerEntries)
+    .leftJoin(fundraisers, eq(ledgerEntries.fundraiserId, fundraisers.id))
+    .leftJoin(events, eq(ledgerEntries.eventId, events.id))
+    .where(
+      and(
+        eq(ledgerEntries.recordedBy, caller.user.id),
+        eq(ledgerEntries.direction, 'in')
+      )
+    )
+    .orderBy(desc(ledgerEntries.occurredAt));
+
+  return takings;
+}
