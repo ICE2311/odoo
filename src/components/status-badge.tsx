@@ -5,34 +5,34 @@ const statusVariants = cva('inline-flex items-center gap-2 px-2.5 py-1 rounded-f
   variants: {
     status: {
       // Order statuses
-      pending_payment: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-      paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      ready_for_pickup: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      collected: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-      cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-      refunded: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+      pending_payment: 'bg-yellow-100 text-yellow-800',
+      paid: 'bg-success/10 text-success',
+      ready_for_pickup: 'bg-primary/10 text-primary',
+      collected: 'bg-emerald-100 text-emerald-800',
+      cancelled: 'bg-muted text-muted-foreground',
+      refunded: 'bg-warning/10 text-warning-foreground',
 
       // Membership statuses
-      active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      lapsed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+      active: 'bg-success/10 text-success',
+      lapsed: 'bg-destructive/10 text-destructive',
+      pending: 'bg-yellow-100 text-yellow-800',
 
       // Expense claim statuses
-      submitted: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      withdrawn: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+      submitted: 'bg-primary/10 text-primary',
+      approved: 'bg-success/10 text-success',
+      rejected: 'bg-destructive/10 text-destructive',
+      withdrawn: 'bg-muted text-muted-foreground',
 
       // Event statuses
-      open: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      sold_out: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-      archived: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300',
+      open: 'bg-success/10 text-success',
+      sold_out: 'bg-destructive/10 text-destructive',
+      draft: 'bg-muted text-muted-foreground',
+      archived: 'bg-slate-100 text-slate-800',
     },
   },
 });
 
-type StatusKey = keyof typeof statusVariants.variants.status;
+type StatusKey = NonNullable<VariantProps<typeof statusVariants>['status']>;
 
 interface StatusBadgeProps {
   status: StatusKey;
@@ -68,4 +68,3 @@ export function StatusBadge({ status, label, dot }: StatusBadgeProps) {
     </span>
   );
 }
-

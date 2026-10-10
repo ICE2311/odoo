@@ -41,6 +41,11 @@ export async function getPublishedAnnouncementBySlug(slug: string) {
       author: {
         columns: { name: true, email: true },
       },
+      revisions: {
+        columns: { id: true, editedAt: true },
+        orderBy: (revisions, { desc }) => [desc(revisions.editedAt)],
+        limit: 1,
+      },
     },
   });
 

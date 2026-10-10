@@ -1,6 +1,5 @@
 import { createTicketOrder, captureTicketOrder } from '@/server/services/tickets';
-import { redirect } from 'next/navigation';
-import { z } from 'zod';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const formData = await req.formData();
@@ -13,10 +12,9 @@ export async function POST(req: Request) {
     const order = await createTicketOrder(eventId, qty);
     // Simulate Razorpay capture immediately in test/dev
     await captureTicketOrder(order.orderId);
-    
-    return redirect('/account/tickets');
+
+    return NextResponse.redirect(new URL('/account/tickets', req.url), 303);
   } catch (error: any) {
-    return new Response(error.message, { status: 400 });
+    return new Response(error.message || 'Failed to process ticket order', { status: 400 });
   }
 }
-

@@ -1,4 +1,4 @@
-import { registerPurpose } from './payments';
+import { registerPurpose } from './payment-registry';
 import { recordEntry } from './ledger';
 
 if (process.env.NODE_ENV !== 'production') {

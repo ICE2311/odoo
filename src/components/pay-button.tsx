@@ -39,7 +39,7 @@ export function PayButton({ purpose, purposeId }: { purpose: string, purposeId: 
             })
           });
           if (verifyRes.ok) {
-            router.push(`/checkout/success?payment=\${data.rzOrderId}`);
+            router.push(`/checkout/success?payment=${data.rzOrderId}`);
           } else {
             router.push('/checkout/failed');
           }

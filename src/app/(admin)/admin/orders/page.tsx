@@ -32,7 +32,7 @@ export default async function AdminOrdersPage() {
         subtitle={`${orders.length} orders • ${orders.filter((o) => o.status === 'pending_payment').length} pending payment`}
       />
 
-      <div className="border border-border bg-card rounded-lg overflow-hidden">
+      <div className="border border-border bg-card rounded-[var(--radius-md)] overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

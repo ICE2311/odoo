@@ -2,6 +2,8 @@ import { getPublicProductBySlug } from '@/server/data/public/shop';
 import { getCaller } from '@/server/auth/guards';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ShoppingBag, ArrowLeft, Tag, AlertTriangle } from 'lucide-react';
+import { AddToCartForm } from '@/components/shop/add-to-cart-form';
 
 export default async function ProductPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
@@ -11,36 +13,56 @@ export default async function ProductPage(props: { params: Promise<{ slug: strin
   const caller = await getCaller();
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <Link href="/shop" className="text-sm underline mb-4 inline-block">&larr; Back to Shop</Link>
-      {product.imageUrls && product.imageUrls.length > 0 && <img src={product.imageUrls[0]} alt={product.name} className="w-full aspect-square object-cover mb-4 rounded" />}
-      <h1 className="text-2xl font-bold">{product.name}</h1>
-      <p className="text-xl mb-4">₹{(product.basePricePaise / 100).toFixed(2)}</p>
-      <p className="mb-4">{product.description}</p>
+    <div className="max-w-5xl mx-auto py-8 md:py-12 px-4 space-y-8">
+      <Link href="/shop" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1.5 inline-block">
+        <ArrowLeft className="w-4 h-4 inline" /> Back to Shop
+      </Link>
       
-      <div className="border p-4 rounded bg-gray-50">
-        <h3 className="font-bold mb-2">Sizes</h3>
-        <div className="flex gap-2 mb-4">
-          {product.variants.map(v => {
-            const available = v.stockOnHand - v.stockHeld;
-            return (
-              <div key={v.id} className="border p-2 rounded text-center">
-                <div className="font-bold">{v.label}</div>
-                <div className="text-xs text-gray-500">{available > 0 ? (available <= 3 ? `Only ${available} left` : 'In stock') : 'Sold out'}</div>
-              </div>
-            );
-          })}
+      <div className="grid md:grid-cols-2 gap-12">
+        <div className="space-y-4">
+          <div className="bg-card border border-border rounded-[var(--radius-xl)] shadow-sm overflow-hidden aspect-square flex items-center justify-center p-8">
+            {product.imageUrls && product.imageUrls.length > 0 ? (
+              <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover rounded-[var(--radius-md)]" />
+            ) : (
+              <ShoppingBag className="w-32 h-32 text-muted-foreground/20" />
+            )}
+          </div>
         </div>
         
-        {caller.kind === 'visitor' && <p>Log in to buy (members only)</p>}
-        {caller.kind === 'user' && !caller.isMember && <p>Merch is for members only — <Link href="/account/membership" className="underline">Become a member</Link></p>}
-        {caller.kind === 'user' && caller.isMember && (
-          <form method="POST" action="/api/cart/add">
-            {/* Minimal form for now */}
-            <input type="hidden" name="productId" value={product.id} />
-            <button className="bg-black text-white w-full p-2 rounded">Add to cart</button>
-          </form>
-        )}
+        <div className="space-y-8 flex flex-col">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight mb-2 text-foreground">{product.name}</h1>
+            <p className="text-3xl font-semibold text-primary mb-6 flex items-center gap-2">
+              <Tag className="w-6 h-6 text-secondary" /> ₹{(product.basePricePaise / 100).toFixed(2)}
+            </p>
+            <div className="prose prose-blue text-muted-foreground leading-relaxed">
+              {product.description}
+            </div>
+          </div>
+          
+          <div className="border border-border p-6 rounded-[var(--radius-xl)] bg-card shadow-sm mt-auto">
+            <h3 className="font-bold text-lg mb-4 text-foreground">Select Variant</h3>
+            
+            {caller.kind === 'visitor' ? (
+              <div className="p-4 bg-muted/50 rounded-[var(--radius-md)] border border-border text-center space-y-3">
+                <p className="font-medium text-muted-foreground">Log in to view availability and purchase.</p>
+                <Link href="/login" className="inline-block px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90">
+                  Log in
+                </Link>
+              </div>
+            ) : caller.kind === 'user' && !caller.isMember ? (
+              <div className="p-4 bg-warning/10 border border-warning/20 rounded-[var(--radius-md)] text-center space-y-3">
+                <AlertTriangle className="w-6 h-6 text-warning-foreground mx-auto" />
+                <p className="font-semibold text-warning-foreground">Merch is exclusively for members.</p>
+                <Link href="/account/membership" className="inline-block px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90">
+                  Become a Member
+                </Link>
+              </div>
+            ) : (
+              <AddToCartForm productId={product.id} variants={product.variants} />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

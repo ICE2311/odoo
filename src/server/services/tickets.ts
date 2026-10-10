@@ -82,9 +82,14 @@ export async function createTicketOrder(eventId: string, qty: number) {
   });
 }
 
-export async function captureTicketOrder(orderId: string, razorpayPaymentId: string = 'test_pay_id') {
+export async function captureTicketOrder(orderId: string, razorpayPaymentId?: string) {
   const caller = await getCaller();
   if (caller.kind === 'visitor') throw new Error('UNAUTHORIZED');
+
+  const finalPaymentId =
+    razorpayPaymentId && razorpayPaymentId !== 'test_pay_id'
+      ? razorpayPaymentId
+      : `pay_sim_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 
   return await db.transaction(async (tx) => {
     const orderRows = await tx.execute(
@@ -105,7 +110,7 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId: str
 
     // 1. Mark payment and order as paid
     await tx.update(payments)
-      .set({ status: 'captured', razorpayPaymentId })
+      .set({ status: 'captured', razorpayPaymentId: finalPaymentId, updatedAt: new Date() })
       .where(eq(payments.id, order.payment_id));
 
     await tx.update(ticketOrders)
@@ -144,18 +149,20 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId: str
 
     const insertedTickets = await tx.insert(tickets).values(newTickets).returning();
 
-    // 4. Ledger entry
-    await tx.insert(ledgerEntries).values({
-      direction: 'in',
-      amountPaise: order.total_paise,
-      category: 'ticket_sales',
-      method: 'razorpay',
-      sourceType: 'ticket_order',
-      sourceId: order.id,
-      eventId: order.event_id,
-      description: `Ticket order \${order.id}`,
-      recordedBy: caller.user.id,
-    });
+    // 4. Ledger entry (only if amount > 0)
+    if (order.total_paise > 0) {
+      await tx.insert(ledgerEntries).values({
+        direction: 'in',
+        amountPaise: order.total_paise,
+        category: 'ticket_sales',
+        method: 'razorpay',
+        sourceType: 'ticket_order',
+        sourceId: order.id,
+        eventId: order.event_id,
+        description: `Ticket order ${order.id}`,
+        recordedBy: caller.user.id,
+      });
+    }
 
     return insertedTickets;
   });

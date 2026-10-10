@@ -1,6 +1,6 @@
 import { db } from '@/server/db';
 import { events, ticketOrders, tickets, eventDoorStaff, ledgerEntries } from '@/server/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
 import { requireAdmin } from '@/server/auth/guards';
 import { z } from 'zod';
 
@@ -16,18 +16,21 @@ export async function getAdminEvents() {
     const refundsRes = await db.select({ total: sql<number>`SUM(amount_paise)` }).from(ledgerEntries).where(and(eq(ledgerEntries.eventId, event.id), eq(ledgerEntries.category, 'refund')));
     return {
       ...event,
-      grossRevenue: res[0]?.total || 0,
-      refunds: refundsRes[0]?.total || 0,
+      grossRevenue: Number(res[0]?.total || 0),
+      refunds: Number(refundsRes[0]?.total || 0),
     };
   }));
 
   return listWithRevenue;
 }
 
-export async function getAdminEvent(id: string) {
+export async function getAdminEvent(idOrSlug: string) {
   await requireAdmin();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
   const event = await db.query.events.findFirst({
-    where: eq(events.id, id),
+    where: isUuid
+      ? or(eq(events.id, idOrSlug), eq(events.slug, idOrSlug))
+      : eq(events.slug, idOrSlug),
   });
   return event;
 }
@@ -106,7 +109,7 @@ export async function cancelEventAdmin(id: string) {
     const [event] = await tx.update(events).set({ status: 'cancelled' }).where(eq(events.id, id)).returning();
     
     // 2. Void valid tickets
-    const validTickets = await tx.execute(sql`SELECT id, order_id, price_paise FROM tickets WHERE event_id = \${id} AND status = 'valid' FOR UPDATE`);
+    const validTickets = await tx.execute(sql`SELECT id, order_id, price_paise FROM tickets WHERE event_id = ${id} AND status = 'valid' FOR UPDATE`);
     if (validTickets.rows.length > 0) {
       await tx.update(tickets).set({ status: 'refunded' }).where(and(eq(tickets.eventId, id), eq(tickets.status, 'valid')));
       
@@ -128,7 +131,7 @@ export async function cancelEventAdmin(id: string) {
             sourceType: 'ticket_order',
             sourceId: oid as string,
             eventId: id,
-            description: `Bulk refund for cancelled event \${id}`,
+            description: `Bulk refund for cancelled event ${id}`,
             recordedBy: caller.user.id,
           });
         }

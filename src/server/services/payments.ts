@@ -1,31 +1,41 @@
 import { db } from '@/server/db';
 import { payments, refunds } from '@/server/db/schema';
 import { Caller } from '@/server/auth/guards';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+import {
+  registry,
+  registerPurpose,
+  type PurposeHandler,
+  type PaymentContext,
+} from './payment-registry';
 
-type PaymentContext = { tx: any; payment: any };
+export { registry, registerPurpose, type PurposeHandler, type PaymentContext };
 
-export type PurposeHandler = {
-  computeAmount: (purposeId: string, caller: Caller) => Promise<number>;
-  onCaptured: (ctx: PaymentContext) => Promise<void>;
-  onFailed: (ctx: PaymentContext) => Promise<void>;
-  onRefunded: (ctx: PaymentContext & { refund: any }) => Promise<void>;
-};
+// Pre-load purpose handlers so the registry is always populated
+import './membership';
+import './merch-registry';
+import './test_purchase';
 
-export const registry: Record<string, PurposeHandler> = {};
-
-export function registerPurpose(purpose: string, handler: PurposeHandler) {
-  registry[purpose] = handler;
+function getRazorpay(): Razorpay | null {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret || keyId === 'rzp_test_placeholder') {
+    return null;
+  }
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret,
+  });
 }
 
-export async function createCheckout(purpose: 'membership' | 'ticket_order' | 'merch_order' | 'test_purchase', purposeId: string, caller: Caller) {
+export async function createCheckout(
+  purpose: 'membership' | 'ticket_order' | 'merch_order' | 'test_purchase',
+  purposeId: string,
+  caller: Caller
+) {
   const handler = registry[purpose];
   if (!handler) throw new Error(`Unknown purpose: ${purpose}`);
 
@@ -39,7 +49,25 @@ export async function createCheckout(purpose: 'membership' | 'ticket_order' | 'm
     status: 'created',
   }).returning();
 
-  const rzOrder = await razorpay.orders.create({
+  const rzp = getRazorpay();
+
+  if (!rzp) {
+    // Development / demo mode simulation: allows testing when Razorpay credentials are not yet set
+    const simOrderId = `order_sim_${payment.id.replace(/-/g, '').slice(0, 16)}`;
+    await db.update(payments).set({ razorpayOrderId: simOrderId }).where(eq(payments.id, payment.id));
+    return {
+      keyId: 'rzp_test_simulated',
+      rzOrderId: simOrderId,
+      amount,
+      isSimulated: true,
+      prefill: {
+        name: caller.user?.name || '',
+        email: caller.user?.email || '',
+      },
+    };
+  }
+
+  const rzOrder = await rzp.orders.create({
     amount,
     currency: 'INR',
     receipt: payment.id,
@@ -51,19 +79,26 @@ export async function createCheckout(purpose: 'membership' | 'ticket_order' | 'm
     keyId: process.env.RAZORPAY_KEY_ID!,
     rzOrderId: rzOrder.id,
     amount,
+    isSimulated: false,
     prefill: {
-      name: caller.user!.name,
-      email: caller.user!.email,
+      name: caller.user?.name || '',
+      email: caller.user?.email || '',
     },
   };
 }
 
 export async function verifyClientPayment(rzOrderId: string, rzPaymentId: string, signature: string) {
-  const body = rzOrderId + "|" + rzPaymentId;
+  if (rzOrderId.startsWith('order_sim_')) {
+    // Simulated instant payment in development / test
+    await capturePayment(rzPaymentId || 'pay_simulated', rzOrderId);
+    return;
+  }
+
+  const body = rzOrderId + '|' + rzPaymentId;
   const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
     .update(body.toString())
-    .digest("hex");
+    .digest('hex');
 
   if (expectedSignature !== signature) {
     throw new Error('Invalid signature');
@@ -75,9 +110,10 @@ export async function verifyClientPayment(rzOrderId: string, rzPaymentId: string
 export async function capturePayment(rzPaymentId: string, rzOrderId: string) {
   await db.transaction(async (tx) => {
     // Lock the row
-    const [payment] = await tx.execute(
-      require('drizzle-orm').sql`SELECT * FROM payments WHERE razorpay_order_id = ${rzOrderId} FOR UPDATE`
-    ).then((res: any) => res.rows);
+    const res = await tx.execute(
+      sql`SELECT * FROM payments WHERE razorpay_order_id = ${rzOrderId} FOR UPDATE`
+    );
+    const payment = res.rows?.[0] as any;
 
     if (!payment) throw new Error('Payment not found');
     if (payment.status === 'captured') return;

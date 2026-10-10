@@ -8,7 +8,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      'next/server': path.resolve(__dirname, './src/tests/__mocks__/next/server.ts')
     }
   }
 });

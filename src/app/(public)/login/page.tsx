@@ -39,40 +39,42 @@ export default function LoginPage() {
   if (status === 'success' && mode === 'magic') {
     return (
       <div className="max-w-md mx-auto mt-24 text-center space-y-6">
-        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-bold">Check your email</h1>
-        <p className="text-gray-600">A magic link has been sent to <strong>{email}</strong>. Click the link in the email to sign in securely.</p>
-        <button onClick={() => setStatus('idle')} className="text-blue-600 font-medium hover:underline">Use a different email</button>
+        <p className="text-muted-foreground">A magic link has been sent to <strong>{email}</strong>. Click the link in the email to sign in securely.</p>
+        <button onClick={() => setStatus('idle')} className="text-primary font-medium hover:underline">Use a different email</button>
       </div>
     );
   }
 
   return (
     <div className="max-w-md mx-auto mt-24">
-      <div className="bg-white border rounded-2xl shadow-sm p-8 space-y-6">
+      <div className="bg-card border rounded-[var(--radius-xl)] shadow-sm p-8 space-y-6 card-hover">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-gray-500">Sign in to your Skyline account</p>
+          <p className="text-muted-foreground">Sign in to your Skyline account</p>
         </div>
 
         {status === 'error' && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
+          <div className="bg-destructive/10 text-destructive p-3 rounded-[var(--radius-md)] text-sm text-center">
             {errorMsg}
           </div>
         )}
 
-        <div className="flex bg-gray-100 p-1 rounded-lg">
+        <div className="flex bg-muted p-1 rounded-[var(--radius-md)]">
           <button 
+            type="button"
             onClick={() => { setMode('password'); setStatus('idle'); }} 
-            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${mode === 'password' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${mode === 'password' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
           >
             Password
           </button>
           <button 
+            type="button"
             onClick={() => { setMode('magic'); setStatus('idle'); }} 
-            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${mode === 'magic' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${mode === 'magic' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
           >
             Magic Link
           </button>
@@ -83,7 +85,7 @@ export default function LoginPage() {
             <label htmlFor="email" className="text-sm font-medium">Email address</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Mail className="h-5 w-5 text-muted-foreground" />
               </div>
               <input
                 id="email"
@@ -91,7 +93,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+                className="w-full pl-10 pr-4 py-2 bg-input border rounded-[var(--radius-md)] focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-shadow"
                 placeholder="you@example.com"
                 disabled={status === 'loading'}
               />
@@ -103,7 +105,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="text-sm font-medium">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   id="password"
@@ -111,7 +113,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+                  className="w-full pl-10 pr-4 py-2 bg-input border rounded-[var(--radius-md)] focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-shadow"
                   placeholder="••••••••"
                   disabled={status === 'loading'}
                 />
@@ -122,7 +124,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="w-full gradient-primary text-primary-foreground font-medium py-2.5 rounded-[var(--radius-md)] hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {status === 'loading' ? 'Signing in...' : mode === 'magic' ? 'Send Magic Link' : 'Sign In'}
           </button>
@@ -130,16 +132,17 @@ export default function LoginPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={() => signIn('google', { callbackUrl: '/account' })}
-          className="w-full border border-gray-300 bg-white text-gray-700 font-medium py-2.5 rounded-lg hover:bg-gray-50 transition-colors flex justify-center items-center gap-2"
+          className="w-full border border-border bg-card text-foreground font-medium py-2.5 rounded-[var(--radius-md)] hover:bg-muted transition-colors flex justify-center items-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -150,8 +153,8 @@ export default function LoginPage() {
           Google
         </button>
 
-        <p className="text-center text-sm text-gray-600">
-          Don't have an account? <Link href="/register" className="font-medium text-blue-600 hover:underline">Register here</Link>
+        <p className="text-center text-sm text-muted-foreground">
+          Don't have an account? <Link href="/register" className="font-medium text-primary hover:underline">Register here</Link>
         </p>
       </div>
     </div>

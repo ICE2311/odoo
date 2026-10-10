@@ -1,180 +1,117 @@
 import Link from 'next/link';
-import { ArrowRight, Calendar, ShoppingBag, HeartHandshake, Sparkles, Users, Zap } from 'lucide-react';
-import { getCaller } from '@/server/auth/guards';
+import { Users, Calendar, Heart, ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
 
-export default async function Home() {
-  const caller = await getCaller();
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 -z-10 gradient-subtle opacity-40" />
-        <div className="absolute top-20 right-10 w-72 h-72 rounded-full gradient-primary opacity-10 blur-3xl -z-10" />
-
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="space-y-8 text-center">
-            <div className="space-y-4 fade-in">
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-                <span className="gradient-text">The heart of</span>
-                <br />
-                <span className="text-foreground">student life</span>
-              </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Connect with your community, discover events, shop merch, and make an impact through volunteering.
-              </p>
+      <section className="relative gradient-hero py-24 lg:py-32 overflow-hidden border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8 z-10">
+            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
+              The heart of <br />
+              <span className="gradient-text">student life.</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
+              Join the Skyline Student Association. Get exclusive access to events, premium merch, and volunteer opportunities.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/register" className="bg-primary text-primary-foreground px-8 py-3 rounded-full font-semibold shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
+                Join Skyline →
+              </Link>
+              <Link href="/events" className="bg-white border border-border px-8 py-3 rounded-full font-semibold text-foreground hover:bg-muted transition-colors">
+                Explore Events
+              </Link>
             </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              {caller.kind === 'user' ? (
-                <Link
-                  href="/account"
-                  className="group px-8 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all flex items-center gap-2"
-                >
-                  Go to Dashboard
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/register"
-                    className="group px-8 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all flex items-center gap-2"
-                  >
-                    Join Skyline
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="px-8 py-4 rounded-xl border border-border text-foreground font-semibold hover:bg-muted transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                </>
-              )}
+          </div>
+          
+          <div className="hidden lg:flex justify-center relative">
+            <div className="w-96 h-96 bg-white rounded-full border-4 border-primary/10 shadow-2xl flex items-center justify-center relative overflow-hidden">
+               <div className="absolute top-10 left-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl"></div>
+               <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary/20 rounded-full blur-2xl"></div>
+               <Sparkles className="w-32 h-32 text-primary opacity-80" strokeWidth={1} />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Bar */}
+      <section className="py-12 bg-white border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="space-y-2">
+            <div className="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-4">
+              <Users className="w-6 h-6" />
+            </div>
+            <h3 className="text-3xl font-bold text-foreground">500+</h3>
+            <p className="text-muted-foreground font-medium">Active Members</p>
+          </div>
+          <div className="space-y-2">
+            <div className="w-12 h-12 mx-auto bg-secondary/10 text-secondary rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-4">
+              <Calendar className="w-6 h-6" />
+            </div>
+            <h3 className="text-3xl font-bold text-foreground">30+</h3>
+            <p className="text-muted-foreground font-medium">Events / Year</p>
+          </div>
+          <div className="space-y-2">
+            <div className="w-12 h-12 mx-auto bg-accent/10 text-accent rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-4">
+              <Heart className="w-6 h-6" />
+            </div>
+            <h3 className="text-3xl font-bold text-foreground">12</h3>
+            <p className="text-muted-foreground font-medium">Fundraisers</p>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 md:py-32 border-t border-border">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16">Everything you need</h2>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Events */}
-            <Link
-              href="/events"
-              className="group p-8 rounded-xl border border-border bg-card/50 hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all hover:-translate-y-1"
-            >
-              <div className="w-12 h-12 rounded-lg gradient-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Calendar className="w-6 h-6 text-white" />
+      <section className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold">Everything you need.</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">One platform for your entire student experience.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <Link href="/events" className="group bg-white p-8 rounded-[var(--radius-md)]-3xl border border-border shadow-sm card-hover relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-primary transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+              <div className="w-14 h-14 bg-primary/10 text-primary rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-6">
+                <Calendar className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Events</h3>
-              <p className="text-muted-foreground">Discover and attend amazing events happening on campus</p>
+              <h3 className="text-xl font-bold mb-3">Events</h3>
+              <p className="text-muted-foreground mb-6">Get tickets to the best parties, galas, and mixers on campus.</p>
+              <div className="flex items-center text-primary font-semibold group-hover:gap-2 transition-all">Explore <ArrowRight className="w-4 h-4 ml-1" /></div>
             </Link>
 
-            {/* Shop */}
-            <Link
-              href="/shop"
-              className="group p-8 rounded-xl border border-border bg-card/50 hover:border-accent hover:shadow-lg hover:shadow-accent/20 transition-all hover:-translate-y-1"
-            >
-              <div className="w-12 h-12 rounded-lg bg-accent/20 text-accent flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <ShoppingBag className="w-6 h-6" />
+            <Link href="/shop" className="group bg-white p-8 rounded-[var(--radius-md)]-3xl border border-border shadow-sm card-hover relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-secondary transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+              <div className="w-14 h-14 bg-secondary/10 text-secondary rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-6">
+                <ShoppingBag className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Merch Shop</h3>
-              <p className="text-muted-foreground">Get exclusive Skyline gear and show your pride</p>
+              <h3 className="text-xl font-bold mb-3">Merch Shop</h3>
+              <p className="text-muted-foreground mb-6">Cop the latest Skyline hoodies, tees, and exclusive gear.</p>
+              <div className="flex items-center text-secondary font-semibold group-hover:gap-2 transition-all">Shop Now <ArrowRight className="w-4 h-4 ml-1" /></div>
             </Link>
 
-            {/* Volunteer */}
-            <Link
-              href="/volunteer"
-              className="group p-8 rounded-xl border border-border bg-card/50 hover:border-secondary hover:shadow-lg hover:shadow-secondary/20 transition-all hover:-translate-y-1"
-            >
-              <div className="w-12 h-12 rounded-lg bg-secondary/20 text-secondary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <HeartHandshake className="w-6 h-6" />
+            <Link href="/volunteer" className="group bg-white p-8 rounded-[var(--radius-md)]-3xl border border-border shadow-sm card-hover relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-accent transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+              <div className="w-14 h-14 bg-accent/10 text-accent rounded-[var(--radius-md)]-2xl flex items-center justify-center mb-6">
+                <Heart className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Volunteer</h3>
-              <p className="text-muted-foreground">Make a difference and help run amazing events</p>
+              <h3 className="text-xl font-bold mb-3">Volunteer</h3>
+              <p className="text-muted-foreground mb-6">Give back to the community and track your volunteer hours.</p>
+              <div className="flex items-center text-accent font-semibold group-hover:gap-2 transition-all">Get Involved <ArrowRight className="w-4 h-4 ml-1" /></div>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Why Join Section */}
-      <section className="py-20 md:py-32 bg-card/50 border-t border-border">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16">Why join Skyline?</h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Connect</h3>
-                <p className="text-muted-foreground">Meet students and build lasting friendships</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Discover</h3>
-                <p className="text-muted-foreground">Explore events and activities you'll love</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Get Involved</h3>
-                <p className="text-muted-foreground">Make an impact through volunteering</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                <ShoppingBag className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Exclusive Perks</h3>
-                <p className="text-muted-foreground">Members get exclusive merch and deals</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 md:py-32 border-t border-border">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h2 className="text-4xl font-bold mb-6">Ready to join?</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Become part of the Skyline community and start your journey today.
-          </p>
-
-          {caller.kind === 'user' ? (
-            <Link
-              href="/account"
-              className="inline-block px-8 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all"
-            >
-              Go to Dashboard
-            </Link>
-          ) : (
-            <Link
-              href="/register"
-              className="inline-block px-8 py-4 rounded-xl gradient-primary text-primary-foreground font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all"
-            >
-              Get Started
-            </Link>
-          )}
+      {/* Final CTA */}
+      <section className="gradient-accent py-20 text-center text-white">
+        <div className="max-w-3xl mx-auto px-4 space-y-8">
+          <h2 className="text-4xl font-bold">Ready to jump in?</h2>
+          <p className="text-white/90 text-lg">Join hundreds of students making the most of their campus life.</p>
+          <Link href="/register" className="inline-block bg-white text-accent font-bold px-8 py-3 rounded-full shadow-lg hover:-translate-y-0.5 transition-transform">
+            Get Started
+          </Link>
         </div>
       </section>
     </div>

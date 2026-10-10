@@ -1,5 +1,6 @@
 import { db } from '@/server/db';
-import { merchOrders, desc } from '@/server/db/schema';
+import { merchOrders } from '@/server/db/schema';
+import { desc } from 'drizzle-orm';
 import { eq } from 'drizzle-orm';
 import { requireUser } from '@/server/auth/guards';
 

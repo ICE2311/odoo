@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
 import { events } from '@/server/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
-import { z } from 'zod';
+import { eq, and, or, desc } from 'drizzle-orm';
+import { getCaller } from '@/server/auth/guards';
 
 export async function getPublicEvents() {
   const list = await db.query.events.findMany({
@@ -29,12 +29,17 @@ export async function getPublicEvents() {
   return list;
 }
 
-export async function getPublicEventBySlug(slug: string) {
+export async function getPublicEventBySlug(slugOrId: string) {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
+  const caller = await getCaller();
+  const isAdmin = caller.kind === 'user' && caller.isAdmin;
+
+  const matchCondition = isUuid
+    ? or(eq(events.id, slugOrId), eq(events.slug, slugOrId))
+    : eq(events.slug, slugOrId);
+
   const event = await db.query.events.findFirst({
-    where: and(
-      eq(events.slug, slug),
-      eq(events.status, 'published')
-    ),
+    where: isAdmin ? matchCondition : and(matchCondition, eq(events.status, 'published')),
     columns: {
       id: true,
       title: true,
@@ -53,9 +58,8 @@ export async function getPublicEventBySlug(slug: string) {
       seatsSold: true,
       seatsHeld: true,
       status: true,
-    }
+    },
   });
 
   return event;
 }
-

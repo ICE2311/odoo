@@ -21,12 +21,12 @@ export function FinanceCharts({ inByCategory, outByCategory, monthlyTrend }: {
                   <span>{c.category}</span>
                   <span>₹{(c.total / 100).toFixed(2)}</span>
                 </div>
-                <div className="h-4 bg-gray-200 rounded overflow-hidden">
-                  <div className="h-full bg-green-500" style={{ width: `${(c.total / maxIn) * 100}%` }}></div>
+                <div className="h-4 bg-muted rounded-[var(--radius-md)] overflow-hidden">
+                  <div className="h-full bg-success/10" style={{ width: `${(c.total / maxIn) * 100}%` }}></div>
                 </div>
               </div>
             ))}
-            {inByCategory.length === 0 && <div className="text-sm text-gray-500">No income</div>}
+            {inByCategory.length === 0 && <div className="text-sm text-muted-foreground">No income</div>}
           </div>
         </div>
         <div>
@@ -38,32 +38,32 @@ export function FinanceCharts({ inByCategory, outByCategory, monthlyTrend }: {
                   <span>{c.category}</span>
                   <span>₹{(c.total / 100).toFixed(2)}</span>
                 </div>
-                <div className="h-4 bg-gray-200 rounded overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: `${(c.total / maxOut) * 100}%` }}></div>
+                <div className="h-4 bg-muted rounded-[var(--radius-md)] overflow-hidden">
+                  <div className="h-full bg-destructive/10" style={{ width: `${(c.total / maxOut) * 100}%` }}></div>
                 </div>
               </div>
             ))}
-            {outByCategory.length === 0 && <div className="text-sm text-gray-500">No expenses</div>}
+            {outByCategory.length === 0 && <div className="text-sm text-muted-foreground">No expenses</div>}
           </div>
         </div>
       </div>
 
       <div>
         <h3 className="text-lg font-bold mb-4">Monthly Trend</h3>
-        <div className="flex items-end space-x-2 h-40 border-b border-l border-gray-300 p-2 overflow-x-auto">
+        <div className="flex items-end space-x-2 h-40 border-b border-border border-l border-border p-2 overflow-x-auto">
           {monthlyTrend.map(m => (
             <div key={m.month} className="flex flex-col items-center justify-end h-full w-12 flex-shrink-0 group relative">
               <div className="flex items-end w-full h-full justify-center space-x-1">
-                <div className="w-4 bg-green-500" style={{ height: `${(m.in / maxTrend) * 100}%` }}></div>
-                <div className="w-4 bg-red-500" style={{ height: `${(m.out / maxTrend) * 100}%` }}></div>
+                <div className="w-4 bg-success/10" style={{ height: `${(m.in / maxTrend) * 100}%` }}></div>
+                <div className="w-4 bg-destructive/10" style={{ height: `${(m.out / maxTrend) * 100}%` }}></div>
               </div>
               <span className="text-xs mt-1 transform -rotate-45 origin-top-left translate-y-2">{m.month}</span>
-              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs p-1 rounded z-10 whitespace-nowrap">
+              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs p-1 rounded-[var(--radius-md)] z-10 whitespace-nowrap">
                 In: ₹{(m.in / 100).toFixed(2)} | Out: ₹{(m.out / 100).toFixed(2)}
               </div>
             </div>
           ))}
-          {monthlyTrend.length === 0 && <div className="text-sm text-gray-500">No data</div>}
+          {monthlyTrend.length === 0 && <div className="text-sm text-muted-foreground">No data</div>}
         </div>
       </div>
     </div>

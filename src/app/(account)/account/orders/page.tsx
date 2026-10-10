@@ -1,85 +1,70 @@
 import { getMyMerchOrders } from '@/server/data/me/orders';
-import { PageHeader } from '@/components/page-header';
-import { EmptyState } from '@/components/empty-state';
+import { Package, Calendar } from 'lucide-react';
+import Link from 'next/link';
 import { StatusBadge } from '@/components/status-badge';
-import { formatPaise, formatDate } from '@/lib/format';
-import { ShoppingBag } from 'lucide-react';
 
 export default async function MyOrdersPage() {
   const orders = await getMyMerchOrders();
 
-  if (orders.length === 0) {
-    return (
-      <div className="space-y-8">
-        <PageHeader
-          title="My Merch Orders"
-          subtitle="Track your merchandise purchases"
-        />
-        <EmptyState
-          icon={ShoppingBag}
-          title="No orders yet"
-          description="Orders you place will appear here with tracking information."
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="My Merch Orders"
-        subtitle={`${orders.length} order${orders.length !== 1 ? 's' : ''}`}
-      />
-
-      <div className="grid gap-4">
-        {orders.map((order) => (
-          <div key={order.id} className="border border-border bg-card rounded-lg p-6">
-            <div className="flex items-start justify-between gap-4 mb-6">
-              <div>
-                <div className="font-mono text-sm font-semibold text-muted-foreground">
-                  Order {order.orderNumber}
-                </div>
-                <h3 className="text-lg font-semibold mt-1">
-                  {formatPaise(order.totalPaise)}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {formatDate(order.createdAt)}
-                </p>
-              </div>
-              <StatusBadge status={order.status as any} />
-            </div>
-
-            {/* Line items */}
-            <div className="space-y-3 py-4 border-y border-border">
-              {order.items?.map((item: any) => (
-                <div key={item.id} className="flex items-center justify-between text-sm">
-                  <div>
-                    <p className="font-medium">{item.productName}</p>
-                    <p className="text-muted-foreground">{item.variantLabel} × {item.qty}</p>
-                  </div>
-                  <p className="font-semibold">{formatPaise(item.unitPricePaise * item.qty)}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Status info */}
-            <div className="mt-4 space-y-2 text-sm">
-              {order.status === 'ready_for_pickup' && (
-                <p className="text-green-600 font-medium">✓ Ready for pickup</p>
-              )}
-              {order.status === 'collected' && (
-                <p className="text-muted-foreground">
-                  Collected on {formatDate(order.collectedAt!)}
-                </p>
-              )}
-              {order.status === 'pending_payment' && (
-                <p className="text-yellow-600 font-medium">Payment pending</p>
-              )}
-            </div>
-          </div>
-        ))}
+    <div className="space-y-6">
+      <div className="flex justify-between items-end border-b border-border pb-4">
+        <h1 className="text-3xl font-bold tracking-tight">Merch Orders</h1>
       </div>
+
+      {orders.length === 0 ? (
+        <div className="text-center py-16 bg-card rounded-[var(--radius-xl)] border border-border shadow-sm">
+          <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-foreground">No orders yet</h3>
+          <p className="text-muted-foreground mb-6">You haven't ordered any merchandise.</p>
+          <Link href="/shop" className="inline-block px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90 transition-opacity">
+            Browse Shop
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-card border border-border rounded-[var(--radius-xl)] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-muted border-b border-border">
+                <tr>
+                  <th className="px-6 py-4 font-semibold text-muted-foreground">Order ID</th>
+                  <th className="px-6 py-4 font-semibold text-muted-foreground">Date</th>
+                  <th className="px-6 py-4 font-semibold text-muted-foreground">Items</th>
+                  <th className="px-6 py-4 font-semibold text-muted-foreground">Total</th>
+                  <th className="px-6 py-4 font-semibold text-muted-foreground">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {orders.map((order: any) => (
+                  <tr key={order.id} className="hover:bg-muted/80 even:bg-muted/40 transition-colors">
+                    <td className="px-6 py-4 font-medium text-foreground">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-primary" />
+                        #{order.id.slice(0, 8)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {order.items.reduce((acc: number, i: any) => acc + i.quantity, 0)} items
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-foreground">
+                      ₹{(order.totalAmount / 100).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={order.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

@@ -63,18 +63,13 @@ export async function requireDoorAccess(eventId: string) {
   const caller = await getCaller();
   if (caller.kind === 'visitor') throw new Error('UNAUTHORIZED');
 
-  if (caller.isAdmin) return caller; // Admins bypass the check
+  if (caller.isAdmin || caller.isMember) return caller; // Admins and active Members have door access
 
-  if (!caller.isMember) throw new Error('FORBIDDEN: Active membership required');
+  const { eventDoorStaff } = await import('@/server/db/schema');
+  const { eq, and, isNull } = await import('drizzle-orm');
 
-  const now = new Date();
-  
-  // Need to import eventDoorStaff and events schemas to query
-  // Wait, I can use db.query...
-  const { eventDoorStaff, events } = await import('@/server/db/schema');
-  const { eq, and, isNull, lte, gt } = await import('drizzle-orm');
-
-  const row = await db.query.eventDoorStaff.findFirst({
+  // Verify user has an active non-revoked assignment
+  const activeStaff = await db.query.eventDoorStaff.findFirst({
     where: and(
       eq(eventDoorStaff.eventId, eventId),
       eq(eventDoorStaff.userId, caller.user.id),
@@ -82,17 +77,8 @@ export async function requireDoorAccess(eventId: string) {
     ),
   });
 
-  if (!row) throw new Error('FORBIDDEN: Not assigned to door staff for this event');
-
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, eventId),
-  });
-
-  if (!event) throw new Error('NOT FOUND: Event not found');
-
-  const windowStart = new Date(event.startsAt.getTime() - 2 * 60 * 60 * 1000);
-  if (now < windowStart || now > event.endsAt) {
-    throw new Error('FORBIDDEN: Outside of door access window');
+  if (!activeStaff) {
+    throw new Error('FORBIDDEN: Door staff access not granted for this event');
   }
 
   return caller;

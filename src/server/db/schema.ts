@@ -441,3 +441,103 @@ export const expenseClaims = pgTable('expense_claims', {
   payeeUpiId: text('payee_upi_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+
+import { relations } from 'drizzle-orm';
+
+export const ticketsRelations = relations(tickets, ({ one }) => ({
+  event: one(events, {
+    fields: [tickets.eventId],
+    references: [events.id],
+  }),
+  ownerUser: one(users, {
+    fields: [tickets.ownerUserId],
+    references: [users.id],
+  }),
+}));
+
+export const eventsRelations = relations(events, ({ many }) => ({
+  tickets: many(tickets),
+}));
+
+export const ledgerEntriesRelations = relations(ledgerEntries, ({ one }) => ({
+  recordedByData: one(users, {
+    fields: [ledgerEntries.recordedBy],
+    references: [users.id],
+  }),
+}));
+
+export const merchOrdersRelations = relations(merchOrders, ({ many }) => ({
+  items: many(merchOrderItems),
+}));
+
+export const merchOrderItemsRelations = relations(merchOrderItems, ({ one }) => ({
+  order: one(merchOrders, {
+    fields: [merchOrderItems.orderId],
+    references: [merchOrders.id],
+  }),
+  variant: one(productVariants, {
+    fields: [merchOrderItems.variantId],
+    references: [productVariants.id],
+  }),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, {
+    fields: [productVariants.productId],
+    references: [products.id],
+  }),
+}));
+
+export const fundraiserTasksRelations = relations(fundraiserTasks, ({ one }) => ({
+  assignee: one(users, {
+    fields: [fundraiserTasks.assigneeId],
+    references: [users.id],
+  }),
+}));
+
+export const announcementsRelations = relations(announcements, ({ one, many }) => ({
+  author: one(users, {
+    fields: [announcements.authorId],
+    references: [users.id],
+  }),
+  revisions: many(announcementRevisions),
+  delivery: one(announcementDeliveries, {
+    fields: [announcements.id],
+    references: [announcementDeliveries.announcementId],
+  }),
+}));
+
+export const announcementRevisionsRelations = relations(announcementRevisions, ({ one }) => ({
+  announcement: one(announcements, {
+    fields: [announcementRevisions.announcementId],
+    references: [announcements.id],
+  }),
+  editor: one(users, {
+    fields: [announcementRevisions.editedBy],
+    references: [users.id],
+  }),
+}));
+
+export const announcementDeliveriesRelations = relations(announcementDeliveries, ({ one }) => ({
+  announcement: one(announcements, {
+    fields: [announcementDeliveries.announcementId],
+    references: [announcements.id],
+  }),
+}));
+
+export const eventDoorStaffRelations = relations(eventDoorStaff, ({ one }) => ({
+  user: one(users, {
+    fields: [eventDoorStaff.userId],
+    references: [users.id],
+  }),
+  event: one(events, {
+    fields: [eventDoorStaff.eventId],
+    references: [events.id],
+  }),
+  grantedByUser: one(users, {
+    fields: [eventDoorStaff.grantedBy],
+    references: [users.id],
+  }),
+}));
+

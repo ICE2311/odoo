@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
 import { settings, memberships, users } from '@/server/db/schema';
 import { eq, and, lte, gt, desc } from 'drizzle-orm';
-import { registerPurpose } from './payments';
+import { registerPurpose } from './payment-registry';
 import { recordEntry } from './ledger';
 import { enqueueEmail } from './email';
 import crypto from 'crypto';
@@ -42,7 +42,8 @@ export async function calculateMembershipDates(userId: string, now: Date = new D
   const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
 
   if (daysUntilExpiry <= renewalDays) {
-    return { startsAt: active.endsAt, endsAt: await getSeasonEndDate(active.endsAt) };
+    const nextSeasonStart = new Date(active.endsAt.getTime() + 1000);
+    return { startsAt: active.endsAt, endsAt: await getSeasonEndDate(nextSeasonStart) };
   }
 
   throw new Error('Cannot buy overlapping membership. Please wait until your current membership is closer to expiry.');

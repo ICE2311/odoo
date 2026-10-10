@@ -26,7 +26,7 @@ export default async function AdminExpensesPage() {
       {submitted.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Pending Review ({submitted.length})</h2>
-          <div className="border border-border bg-card rounded-lg overflow-hidden">
+          <div className="border border-border bg-card rounded-[var(--radius-md)] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -47,9 +47,9 @@ export default async function AdminExpensesPage() {
                     <TableCell className="text-sm text-muted-foreground">{formatDate(claim.spentOn)}</TableCell>
                     <TableCell className="text-sm">
                       {claim.eventName ? (
-                        <span className="text-blue-600">{claim.eventName}</span>
+                        <span className="text-primary">{claim.eventName}</span>
                       ) : claim.fundraiserName ? (
-                        <span className="text-purple-600">{claim.fundraiserName}</span>
+                        <span className="text-accent">{claim.fundraiserName}</span>
                       ) : (
                         '-'
                       )}
@@ -62,7 +62,7 @@ export default async function AdminExpensesPage() {
                         }}>
                           <button
                             type="submit"
-                            className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"
+                            className="p-2 text-success hover:bg-success/10  rounded-[var(--radius-md)] transition-colors"
                             title="Approve"
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -70,7 +70,7 @@ export default async function AdminExpensesPage() {
                         </form>
                         <button
                           type="button"
-                          className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                          className="p-2 text-destructive hover:bg-destructive/10  rounded-[var(--radius-md)] transition-colors"
                           title="Reject"
                         >
                           <XCircle className="w-4 h-4" />
@@ -89,7 +89,7 @@ export default async function AdminExpensesPage() {
       {approved.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Approved, Awaiting Payment ({approved.length})</h2>
-          <div className="border border-border bg-card rounded-lg overflow-hidden">
+          <div className="border border-border bg-card rounded-[var(--radius-md)] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -110,9 +110,9 @@ export default async function AdminExpensesPage() {
                     <TableCell className="text-sm text-muted-foreground">{formatDate(claim.reviewedAt!)}</TableCell>
                     <TableCell className="text-sm">
                       {claim.eventName ? (
-                        <span className="text-blue-600">{claim.eventName}</span>
+                        <span className="text-primary">{claim.eventName}</span>
                       ) : claim.fundraiserName ? (
-                        <span className="text-purple-600">{claim.fundraiserName}</span>
+                        <span className="text-accent">{claim.fundraiserName}</span>
                       ) : (
                         '-'
                       )}
@@ -127,7 +127,7 @@ export default async function AdminExpensesPage() {
                       }}>
                         <button
                           type="submit"
-                          className="p-2 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"
+                          className="p-2 text-success hover:bg-success/10  rounded-[var(--radius-md)] transition-colors"
                           title="Mark as paid"
                         >
                           <DollarSign className="w-4 h-4" />
@@ -146,7 +146,7 @@ export default async function AdminExpensesPage() {
       {paid.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Paid ({paid.length})</h2>
-          <div className="border border-border bg-card rounded-lg overflow-hidden">
+          <div className="border border-border bg-card rounded-[var(--radius-md)] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -179,7 +179,7 @@ export default async function AdminExpensesPage() {
       {rejected.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-muted-foreground">Rejected ({rejected.length})</h2>
-          <div className="border border-border bg-card rounded-lg overflow-hidden">
+          <div className="border border-border bg-card rounded-[var(--radius-md)] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -1,6 +1,6 @@
-import { checkRateLimit } from '@/server/utils/rate-limit';
-"use server";
+'use server';
 
+import { checkRateLimit } from '@/server/utils/rate-limit';
 import { db } from '@/server/db';
 import { expenseClaims } from '@/server/db/schema';
 import { requireMember, requireUser } from '@/server/auth/guards';

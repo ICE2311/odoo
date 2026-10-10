@@ -1,4 +1,4 @@
-import { registerPurpose } from './payments';
+import { registerPurpose } from './payment-registry';
 import { db } from '../db';
 import { merchOrders, merchOrderItems, stockMovements, productVariants, ledgerEntries, memberships } from '../db/schema';
 import { eq, and, sql, lte, gt } from 'drizzle-orm';

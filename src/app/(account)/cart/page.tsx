@@ -1,111 +1,102 @@
 import { getMyCart } from '@/server/data/me/cart';
-import { removeFromCartAction, updateCartQtyAction } from '@/server/actions/cart';
-import { PageHeader } from '@/components/page-header';
-import { EmptyState } from '@/components/empty-state';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { formatPaise } from '@/lib/format';
 
 export default async function CartPage() {
   const cart = await getMyCart();
-
-  if (cart.items.length === 0) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <PageHeader title="Shopping Cart" subtitle="Your cart is currently empty." />
-        <EmptyState
-          icon={ShoppingCart}
-          title="Cart is empty"
-          description="Start shopping to add items to your cart."
-          action={
-            <Link href="/shop" className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
-              Continue Shopping
-            </Link>
-          }
-        />
-      </div>
-    );
-  }
+  const total = (cart.totalPaise / 100).toFixed(2);
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <PageHeader title="Shopping Cart" subtitle={`${cart.items.length} item${cart.items.length !== 1 ? 's' : ''} in your cart`} />
-
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Cart items */}
-        <div className="lg:col-span-2 space-y-4">
-          {cart.items.map((item) => (
-            <div key={item.variantId} className="border border-border bg-card rounded-lg p-4 flex gap-4 items-center justify-between">
-              <div className="flex-1">
-                <p className="font-semibold text-card-foreground">{item.label}</p>
-                <p className="text-sm text-muted-foreground">{formatPaise(item.unitPricePaise)} each</p>
-                {!item.inStock && <p className="text-xs text-destructive mt-1">Only {item.available} in stock</p>}
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Qty stepper */}
-                <div className="flex items-center gap-2 border border-border rounded-lg bg-muted p-1">
-                  <form action={async () => {
-                    'use server';
-                    await updateCartQtyAction(item.variantId, Math.max(1, item.qty - 1));
-                  }}>
-                    <button type="submit" className="p-1 hover:bg-background transition-colors disabled:opacity-50" disabled={item.qty <= 1} aria-label="Decrease quantity">
-                      <Minus className="w-3 h-3" />
-                    </button>
-                  </form>
-                  <span className="w-6 text-center text-sm font-medium">{item.qty}</span>
-                  <form action={async () => {
-                    'use server';
-                    await updateCartQtyAction(item.variantId, item.qty + 1);
-                  }}>
-                    <button type="submit" className="p-1 hover:bg-background transition-colors disabled:opacity-50" disabled={!item.inStock} aria-label="Increase quantity">
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </form>
-                </div>
-
-                <p className="text-sm font-semibold w-20 text-right">{formatPaise(item.lineTotalPaise)}</p>
-
-                <form action={async () => {
-                  'use server';
-                  await removeFromCartAction(item.variantId);
-                }}>
-                  <button type="submit" className="p-1.5 text-muted-foreground hover:text-destructive transition-colors" aria-label="Remove from cart">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </form>
-              </div>
-            </div>
-          ))}
+    <div className="max-w-4xl mx-auto space-y-6 pt-8">
+      <div className="flex items-center gap-3 border-b border-border pb-4">
+        <div className="p-2 bg-primary/10 rounded-[var(--radius-md)] text-primary">
+          <ShoppingBag className="w-6 h-6" />
         </div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Shopping Cart</h1>
+      </div>
 
-        {/* Order summary */}
-        <div className="border border-border bg-card rounded-lg p-6 h-fit">
-          <h2 className="font-semibold text-lg mb-6">Order Summary</h2>
-
-          <div className="space-y-3 pb-6 border-b border-border">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatPaise(cart.totalPaise)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="text-green-600">Free</span>
-            </div>
-          </div>
-
-          <div className="flex justify-between text-lg font-semibold py-6">
-            <span>Total</span>
-            <span>{formatPaise(cart.totalPaise)}</span>
-          </div>
-
-          <Link href="/shop" className="block text-center text-sm text-primary hover:underline">
-            Continue Shopping
+      {cart.items.length === 0 ? (
+        <div className="text-center py-20 bg-card border border-border rounded-[var(--radius-xl)] shadow-sm">
+          <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h2 className="text-xl font-bold text-foreground mb-2">Your cart is empty</h2>
+          <p className="text-muted-foreground mb-6">Looks like you haven't added any merch yet.</p>
+          <Link href="/shop" className="inline-block px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90 shadow-sm transition-opacity">
+            Start Shopping
           </Link>
         </div>
-      </div>
+      ) : (
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-4">
+            {cart.items.map((item: any) => (
+              <div key={item.variantId} className="flex gap-4 bg-card border border-border p-4 rounded-[var(--radius-xl)] shadow-sm items-center">
+                <div className="w-20 h-20 bg-muted rounded-[var(--radius-md)] flex items-center justify-center overflow-hidden shrink-0">
+                  <ShoppingBag className="w-8 h-8 text-muted-foreground/30" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-foreground">{item.label}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">Unit Price: ₹{(item.unitPricePaise / 100).toFixed(2)}</p>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-semibold border border-border rounded-[var(--radius-md)] bg-input px-4 py-1">
+                      Qty: {item.qty}
+                    </span>
+                    <form action="/api/cart/remove" method="POST">
+                      <input type="hidden" name="variantId" value={item.variantId} />
+                      <button 
+                        type="submit"
+                        className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-[var(--radius-md)] transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
+                  </div>
+                  {!item.inStock && (
+                    <p className="text-xs text-destructive font-semibold mt-2">Not enough stock!</p>
+                  )}
+                </div>
+                <div className="font-bold text-lg text-foreground pr-2">
+                  ₹{(item.lineTotalPaise / 100).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-card border border-border rounded-[var(--radius-xl)] p-6 shadow-sm sticky top-24">
+              <h3 className="font-bold text-lg text-foreground border-b border-border pb-4 mb-4">Order Summary</h3>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-foreground">₹{total}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Tax (0%)</span>
+                  <span className="font-medium text-foreground">₹0</span>
+                </div>
+                <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg text-foreground">
+                  <span>Total</span>
+                  <span className="text-primary">₹{total}</span>
+                </div>
+              </div>
+
+              <form action="/api/checkout/cart" method="POST">
+                <button 
+                  type="submit"
+                  className="w-full py-4 text-base font-bold bg-primary text-primary-foreground hover:opacity-90 rounded-[var(--radius-md)] flex items-center justify-center gap-2 shadow-sm transition-opacity"
+                >
+                  Checkout securely
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </form>
+              <div className="mt-4 text-center">
+                <Link href="/shop" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  Continue Shopping
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

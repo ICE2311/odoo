@@ -1,174 +1,66 @@
 import Link from 'next/link';
 import { getCaller } from '@/server/auth/guards';
-import { Menu } from 'lucide-react';
+import { Menu, User, Sparkles } from 'lucide-react';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const caller = await getCaller();
-  const session = caller.kind === 'user' ? { user: caller.user } : null;
-
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="font-bold text-lg tracking-tight text-foreground group-hover:gradient-text transition-all">
-              Skyline
-            </span>
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-border shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-primary font-bold text-xl tracking-tight hover:opacity-90 transition-opacity">
+            <Sparkles className="w-5 h-5" />
+            Skyline
           </Link>
+          
+          <div className="hidden md:flex gap-8 items-center text-sm font-medium text-foreground">
+            <Link href="/events" className="hover:text-primary transition-colors">Events</Link>
+            <Link href="/shop" className="hover:text-primary transition-colors">Shop</Link>
+            <Link href="/volunteer" className="hover:text-primary transition-colors">Volunteer</Link>
+            <Link href="/announcements" className="hover:text-primary transition-colors">Announcements</Link>
+          </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex gap-8 text-sm">
-            <Link href="/events" className="text-muted-foreground hover:text-foreground transition-colors">
-              Events
-            </Link>
-            <Link href="/shop" className="text-muted-foreground hover:text-foreground transition-colors">
-              Shop
-            </Link>
-            <Link href="/announcements" className="text-muted-foreground hover:text-foreground transition-colors">
-              Announcements
-            </Link>
-            <Link href="/volunteer" className="text-muted-foreground hover:text-foreground transition-colors">
-              Volunteer
-            </Link>
-          </nav>
-
-          {/* Actions */}
           <div className="flex items-center gap-4">
-            {session ? (
-              <Link
-                href="/account"
-                className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity text-sm"
-              >
-                Dashboard
+            {caller.kind === 'user' ? (
+              <Link href="/account" className="flex items-center gap-2 bg-muted px-4 py-2 rounded-full hover:bg-muted/80 transition-colors">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                  {caller.user.name?.[0] || 'U'}
+                </div>
+                <span className="text-sm font-medium">My Account</span>
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity text-sm"
-                >
-                  Join
-                </Link>
-              </>
+              <div className="flex items-center gap-2">
+                <Link href="/login" className="hidden md:inline-block px-4 py-2 text-sm font-medium hover:text-primary transition-colors">Sign In</Link>
+                <Link href="/register" className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">Join Now</Link>
+              </div>
             )}
-            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors md:hidden">
-              <Menu className="w-5 h-5" />
+            <button className="md:hidden p-2 text-foreground">
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 w-full">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          {children}
-        </div>
+      </nav>
+      
+      <main className="flex-1">
+        {children}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card/50 backdrop-blur mt-auto">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/events" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Events
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/shop" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Shop
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/volunteer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Volunteer
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Community</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Discord
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Twitter
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Support
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    FAQ
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Privacy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Terms
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
+      <footer className="bg-white border-t border-border mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 text-primary font-bold text-xl">
+            <Sparkles className="w-5 h-5" />
+            Skyline
           </div>
-
-          <div className="border-t border-border pt-8 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Skyline Student Association. All rights reserved.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Built with care for students
-            </p>
+          <div className="text-sm text-muted-foreground">
+            Empowering student life. 
+          </div>
+          <div className="flex gap-4 text-sm font-medium text-foreground">
+            <Link href="/events" className="hover:text-primary">Events</Link>
+            <Link href="/shop" className="hover:text-primary">Shop</Link>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            © 2026 Skyline Student Association
           </div>
         </div>
       </footer>

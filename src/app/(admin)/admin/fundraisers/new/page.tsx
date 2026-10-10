@@ -39,7 +39,7 @@ export default function NewFundraiserPage() {
         <div><label className="block mb-1">Date</label><input required type="datetime-local" name="date" className="border p-2 w-full" /></div>
         <div><label className="block mb-1">Location</label><input required name="location" className="border p-2 w-full" /></div>
         <div><label className="block mb-1">Goal (₹)</label><input required type="number" name="goal" min="0" step="1" className="border p-2 w-full" /></div>
-        <button disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button disabled={loading} className="bg-primary text-primary-foreground px-4 py-2 rounded-[var(--radius-md)]">
           {loading ? 'Creating...' : 'Create'}
         </button>
       </form>

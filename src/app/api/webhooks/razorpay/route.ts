@@ -4,6 +4,8 @@ import { db } from '@/server/db';
 import { webhookEvents, payments, refunds } from '@/server/db/schema';
 import { capturePayment, registry } from '@/server/services/payments';
 import { eq } from 'drizzle-orm';
+import '@/server/services/membership';
+import '@/server/services/merch-registry';
 import '@/server/services/test_purchase'; // ensure registry is loaded
 
 export async function POST(req: Request) {

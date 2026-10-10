@@ -53,3 +53,61 @@ export async function listUsers(args: ListUsersArgs) {
   return { items, nextCursor };
 }
 
+export async function getAdminUsersFull() {
+  await requireAdmin();
+  const now = new Date();
+
+  const allUsers = await db.query.users.findMany({
+    orderBy: (u, { desc }) => [desc(u.createdAt)],
+  });
+
+  const activeMemberships = await db.query.memberships.findMany({
+    where: (m, { and, eq, lte, gt }) =>
+      and(eq(m.status, 'active'), lte(m.startsAt, now), gt(m.endsAt, now)),
+  });
+
+  const allDoorStaff = await db.query.eventDoorStaff.findMany({
+    where: (ds, { isNull }) => isNull(ds.revokedAt),
+    with: {
+      event: {
+        columns: { id: true, title: true, startsAt: true, status: true },
+      },
+    },
+  });
+
+  const upcomingEvents = await db.query.events.findMany({
+    where: (e, { ne }) => ne(e.status, 'cancelled'),
+    orderBy: (e, { asc }) => [asc(e.startsAt)],
+    columns: { id: true, title: true, startsAt: true, status: true },
+  });
+
+  return {
+    users: allUsers.map((user) => {
+      const activeMem = activeMemberships.find((m) => m.userId === user.id);
+      const doorAssignments = allDoorStaff.filter((ds) => ds.userId === user.id);
+      return {
+        ...user,
+        activeMembership: activeMem
+          ? {
+              id: activeMem.id,
+              startsAt: activeMem.startsAt.toISOString(),
+              endsAt: activeMem.endsAt.toISOString(),
+            }
+          : null,
+        doorAssignments: doorAssignments.map((da) => ({
+          id: da.id,
+          eventId: da.eventId,
+          eventTitle: da.event?.title || 'Event',
+          startsAt: da.event?.startsAt?.toISOString() || null,
+        })),
+      };
+    }),
+    upcomingEvents: upcomingEvents.map((e) => ({
+      id: e.id,
+      title: e.title,
+      startsAt: e.startsAt.toISOString(),
+      status: e.status,
+    })),
+  };
+}
+

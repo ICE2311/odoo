@@ -26,7 +26,7 @@ export function RemoteImage({
   if (errored) {
     return (
       <div
-        className={`flex items-center justify-center bg-muted text-muted-foreground text-sm rounded-md ${className ?? ''}`}
+        className={`flex items-center justify-center bg-muted text-muted-foreground text-sm rounded-[var(--radius-md)] ${className ?? ''}`}
         style={{ aspectRatio }}
       >
         <span>{fallbackText} — </span>
@@ -43,7 +43,7 @@ export function RemoteImage({
   }
 
   return (
-    <div className={`overflow-hidden rounded-md ${className ?? ''}`} style={{ aspectRatio }}>
+    <div className={`overflow-hidden rounded-[var(--radius-md)] ${className ?? ''}`} style={{ aspectRatio }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}

@@ -1,4 +1,13 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { vi, describe, it, expect, beforeAll } from 'vitest';
+vi.mock("next/server", () => ({
+  NextResponse: {
+    json: (body: any, init?: any) => ({ body, init, status: init?.status || 200 })
+  }
+}));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 import { db } from '@/server/db';
 import { reconcile, getSemesterReport, getPerEventPnL, getPerFundraiserPnL } from '@/server/data/admin/finance';
 
