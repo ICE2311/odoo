@@ -32,8 +32,8 @@ export async function checkInTicket(eventId: string, token: string) {
           WHERE t.id = ${ticketId} FOR UPDATE`
     );
 
-    if (ticketRows.length === 0) return { ok: false, reason: 'TICKET_NOT_FOUND' };
-    const ticket = ticketRows[0] as any;
+    if (ticketRows.rows.length === 0) return { ok: false, reason: 'TICKET_NOT_FOUND' };
+    const ticket = ticketRows.rows[0] as any;
 
     if (ticket.event_id !== eventId) return { ok: false, reason: 'WRONG_EVENT' };
     if (ticket.status === 'refunded') return { ok: false, reason: 'REFUNDED' };
@@ -71,8 +71,8 @@ export async function getDoorStats(eventId: string) {
   `);
   
   return {
-    checkedIn: Number(rows[0]?.checked_in || 0),
-    total: Number(rows[0]?.total || 0),
+    checkedIn: Number(rows.rows[0]?.checked_in || 0),
+    total: Number(rows.rows[0]?.total || 0),
   };
 }
 

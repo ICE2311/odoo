@@ -4,16 +4,20 @@ import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 export async function getPublicProducts() {
-  const allProducts = await db.select({
-    id: products.id,
-    slug: products.slug,
-    name: products.name,
-    description: products.description,
-    imageUrls: products.imageUrls,
-    basePricePaise: products.basePricePaise,
-    status: products.status
-  }).from(products).where(eq(products.status, 'active'));
-  
+  const allProducts = await db.query.products.findMany({
+    where: eq(products.status, 'active'),
+    with: { variants: true },
+    columns: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      imageUrls: true,
+      basePricePaise: true,
+      status: true,
+    },
+  });
+
   return allProducts;
 }
 

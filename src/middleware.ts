@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/auth';
 
 export async function middleware(request: NextRequest) {
-  const session = await auth();
   const path = request.nextUrl.pathname;
   
   const isProtected = path.startsWith('/account') || 
@@ -13,7 +11,9 @@ export async function middleware(request: NextRequest) {
                       path.startsWith('/door') || 
                       path.startsWith('/cart');
                       
-  if (isProtected && !session) {
+  const hasSession = request.cookies.has('authjs.session-token') || request.cookies.has('__Secure-authjs.session-token');
+
+  if (isProtected && !hasSession) {
     return NextResponse.redirect(new URL('/login?next=' + path, request.url));
   }
   

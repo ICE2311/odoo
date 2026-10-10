@@ -6,7 +6,8 @@ import {
   timestamp,
   integer,
   jsonb,
-  uniqueIndex
+  uniqueIndex,
+  date
 } from 'drizzle-orm/pg-core';
 
 // ─── Users ──────────────────────────────────────────────────────────────────
@@ -20,6 +21,7 @@ export const users = pgTable('users', {
   studentId: text('student_id'),
   college: text('college'),
   role: text('role', { enum: ['user', 'admin'] }).notNull().default('user'),
+  passwordHash: text('password_hash'),
   emailOptIn: boolean('email_opt_in').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -367,4 +369,75 @@ export const stockMovements = pgTable('stock_movements', {
   refId: text('ref_id'),
   by: uuid('by').references(() => users.id),
   at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Phase 7: Fundraisers & Volunteer Tasks ────────────────────────────────
+
+export const fundraisers = pgTable('fundraisers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  date: timestamp('date', { withTimezone: true }).notNull(),
+  location: text('location').notNull(),
+  goalPaise: integer('goal_paise').notNull(),
+  budgetPaise: integer('budget_paise'),
+  status: text('status', { enum: ['planning', 'active', 'completed', 'cancelled'] }).notNull().default('planning'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const fundraiserVolunteers = pgTable('fundraiser_volunteers', {
+  fundraiserId: uuid('fundraiser_id').notNull().references(() => fundraisers.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => {
+  return {
+    uniqueVolunteer: uniqueIndex('unique_fundraiser_volunteer').on(t.fundraiserId, t.userId),
+  };
+});
+
+export const fundraiserTasks = pgTable('fundraiser_tasks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  fundraiserId: uuid('fundraiser_id').notNull().references(() => fundraisers.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  notes: text('notes'),
+  assigneeId: uuid('assignee_id').references(() => users.id),
+  dueAt: timestamp('due_at', { withTimezone: true }),
+  status: text('status', { enum: ['todo', 'doing', 'done', 'blocked'] }).notNull().default('todo'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const fundraiserTakings = pgTable('fundraiser_takings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  fundraiserId: uuid('fundraiser_id').notNull().references(() => fundraisers.id, { onDelete: 'cascade' }),
+  amountPaise: integer('amount_paise').notNull(),
+  method: text('method', { enum: ['cash', 'upi_manual'] }).notNull(),
+  note: text('note'),
+  recordedBy: uuid('recorded_by').notNull().references(() => users.id),
+  recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Phase 8: Expense Claims ────────────────────────────────────────────────
+export const expenseClaims = pgTable('expense_claims', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  claimantId: uuid('claimant_id').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  amountPaise: integer('amount_paise').notNull(),
+  spentOn: date('spent_on').notNull(),
+  eventId: uuid('event_id').references(() => events.id),
+  fundraiserId: uuid('fundraiser_id').references(() => fundraisers.id),
+  receiptUrls: text('receipt_urls').array().notNull(),
+  status: text('status', { enum: ['submitted', 'approved', 'rejected', 'paid', 'withdrawn'] }).notNull().default('submitted'),
+  reviewedBy: uuid('reviewed_by').references(() => users.id),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  rejectionReason: text('rejection_reason'),
+  paidBy: uuid('paid_by').references(() => users.id),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+  payoutMethod: text('payout_method', { enum: ['upi', 'bank', 'cash'] }),
+  payoutRef: text('payout_ref'),
+  payeeUpiId: text('payee_upi_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

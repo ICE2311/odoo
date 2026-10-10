@@ -16,8 +16,8 @@ export async function createTicketOrder(eventId: string, qty: number) {
           FROM events 
           WHERE id = ${eventId} FOR UPDATE`
     );
-    if (eventRows.length === 0) throw new Error('Event not found');
-    const event = eventRows[0] as any;
+    if (eventRows.rows.length === 0) throw new Error('Event not found');
+    const event = eventRows.rows[0] as any;
 
     if (event.status !== 'published') throw new Error('Event not available for sale');
     const now = new Date();
@@ -90,15 +90,15 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId: str
     const orderRows = await tx.execute(
       sql`SELECT id, user_id, event_id, qty, total_paise, status, payment_id FROM ticket_orders WHERE id = ${orderId} FOR UPDATE`
     );
-    if (orderRows.length === 0) throw new Error('Order not found');
-    const order = orderRows[0] as any;
+    if (orderRows.rows.length === 0) throw new Error('Order not found');
+    const order = orderRows.rows[0] as any;
     
     if (order.status !== 'pending') throw new Error('Order is not pending');
 
     const eventRows = await tx.execute(
       sql`SELECT member_price_paise, non_member_price_paise FROM events WHERE id = ${order.event_id}`
     );
-    const event = eventRows[0] as any;
+    const event = eventRows.rows[0] as any;
 
     // Check membership at this moment
     const isMember = caller.isMember && caller.user.id === order.user_id;
@@ -120,7 +120,7 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId: str
     // 3. Create tickets
     const newTickets = [];
     for (let i = 0; i < order.qty; i++) {
-      let priceType = 'non_member';
+      let priceType: 'member' | 'non_member' | 'comp' = 'non_member';
       let pricePaise = event.non_member_price_paise;
       if (isMember && i === 0) {
         priceType = 'member';
@@ -153,7 +153,7 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId: str
       sourceType: 'ticket_order',
       sourceId: order.id,
       eventId: order.event_id,
-      description: \`Ticket order \${order.id}\`,
+      description: `Ticket order \${order.id}`,
       recordedBy: caller.user.id,
     });
 

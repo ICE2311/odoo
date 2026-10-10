@@ -4,6 +4,7 @@ import { memberships, users } from '@/server/db/schema';
 import { sql } from 'drizzle-orm';
 import { enqueueEmail } from '@/server/services/email';
 import { onMembershipLapsedHooks } from '@/server/services/membership';
+import '@/server/services/fundraisers';
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');

@@ -1,6 +1,6 @@
 import { db, pool } from '../db';
 import { users, memberships, settings } from './schema';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 
 async function main() {
   console.log('Seeding demo accounts...');
@@ -81,6 +81,29 @@ async function main() {
       status: 'published',
     }
   ]).onConflictDoNothing();
+
+  console.log('Seeding Phase 7 Fundraisers...');
+  const { fundraisers, fundraiserTasks } = await import('./schema');
+  const [f] = await db.insert(fundraisers).values([
+    {
+      name: 'Spring Bake Sale',
+      slug: 'spring-bake-sale',
+      description: 'Selling cookies and cakes for the spring gala.',
+      date: new Date(nextMonth),
+      location: 'Main Quad',
+      goalPaise: 1000000, // ₹10,000
+      status: 'active',
+      createdBy: accounts[0].email ? (await db.query.users.findFirst({ where: eq(users.email, accounts[0].email) }))!.id : (await db.query.users.findFirst())!.id
+    }
+  ]).onConflictDoNothing().returning();
+
+  if (f) {
+    await db.insert(fundraiserTasks).values([
+      { fundraiserId: f.id, title: 'Bake 50 chocolate chip cookies', createdBy: f.createdBy },
+      { fundraiserId: f.id, title: 'Buy paper plates and napkins', createdBy: f.createdBy },
+      { fundraiserId: f.id, title: 'Setup the table at 8 AM', createdBy: f.createdBy },
+    ]);
+  }
 
   console.log('Seed complete.');
   process.exit(0);

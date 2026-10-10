@@ -44,7 +44,7 @@ describe('Phase 6 Checkpoint', () => {
     const [l] = await db.insert(users).values({ name: 'Lapsed', email: `l${randomUUID()}@test.com` }).returning();
     lapsedId = l.id;
     await db.insert(memberships).values({ userId: l.id, startsAt: new Date(Date.now() - 200000), endsAt: new Date(Date.now() - 100000), pricePaise: 1000, method: 'cash', status: 'active' });
-  }, 30000);
+  }); // timeout removed
 
   beforeEach(async () => {
     await db.delete(stockMovements);
@@ -64,7 +64,7 @@ describe('Phase 6 Checkpoint', () => {
       productId, label: 'M', sku: 'TH-M', stockOnHand: 3, stockHeld: 0
     }).returning();
     variantId = v.id;
-  }, 30000);
+  }); // timeout removed
 
   it.skip('Concurrency test: variant with stock 3, 10 simultaneous checkouts → exactly 3 sold', async () => {
     const promises = [];
@@ -84,7 +84,7 @@ describe('Phase 6 Checkpoint', () => {
                if (res.rowCount === 0) throw new Error("Out of stock");
              }
              return order;
-          }, 30000);
+          }); // timeout removed
         } catch (e: any) {
           return e.message;
         }
@@ -97,7 +97,7 @@ describe('Phase 6 Checkpoint', () => {
     
     const [v] = await db.select().from(productVariants).where(eq(productVariants.id, variantId));
     expect(v.stockHeld).toBe(3);
-  }, 30000);
+  }); // timeout removed
   
   it('Membership lapsing between cart and capture → order cancelled', async () => {
     vi.mocked(guards.requireMember).mockResolvedValue({ user: { id: memberId } } as any);
@@ -114,5 +114,5 @@ describe('Phase 6 Checkpoint', () => {
     
     const [v] = await db.select().from(productVariants).where(eq(productVariants.id, variantId));
     expect(v.stockHeld).toBe(0);
-  }, 30000);
+  }); // timeout removed
 });
