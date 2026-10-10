@@ -58,24 +58,32 @@
   --gradient-subtle: linear-gradient(135deg, oklch(12% 0.01 0) 0%, oklch(15% 0.01 0) 100%);
 }
 
-/* Light mode for accessibility */
+/* Light mode for accessibility - only when explicitly requested */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not(.dark) {
     --background: oklch(98% 0 0);
     --foreground: oklch(12% 0 0);
     --card: oklch(100% 0 0);
     --card-foreground: oklch(12% 0 0);
     --popover: oklch(100% 0 0);
     --popover-foreground: oklch(12% 0 0);
+    --primary: oklch(58% 0.18 280);
+    --primary-foreground: oklch(100% 0 0);
+    --secondary: oklch(45% 0.15 280);
+    --secondary-foreground: oklch(100% 0 0);
+    --accent: oklch(65% 0.16 200);
+    --accent-foreground: oklch(8% 0 0);
     --muted: oklch(88% 0 0);
     --muted-foreground: oklch(45% 0 0);
     --border: oklch(90% 0.01 0);
     --input: oklch(95% 0 0);
+    --destructive: oklch(60% 0.22 29);
+    --warning: oklch(70% 0.19 70);
+    --success: oklch(65% 0.18 142);
   }
 }
 
-/* Class-based dark mode override */
-:root[data-theme="dark"],
+/* Class-based dark mode - explicit override */
 :root.dark {
   --background: oklch(8% 0 0);
   --foreground: oklch(95% 0 0);
@@ -83,10 +91,19 @@
   --card-foreground: oklch(95% 0 0);
   --popover: oklch(15% 0.01 0);
   --popover-foreground: oklch(95% 0 0);
+  --primary: oklch(58% 0.18 280);
+  --primary-foreground: oklch(100% 0 0);
+  --secondary: oklch(45% 0.15 280);
+  --secondary-foreground: oklch(100% 0 0);
+  --accent: oklch(65% 0.16 200);
+  --accent-foreground: oklch(8% 0 0);
   --muted: oklch(25% 0.01 0);
   --muted-foreground: oklch(70% 0 0);
   --border: oklch(18% 0.01 0);
   --input: oklch(14% 0.01 0);
+  --destructive: oklch(60% 0.22 29);
+  --warning: oklch(70% 0.19 70);
+  --success: oklch(65% 0.18 142);
 }
 
 @theme inline {
