@@ -257,3 +257,114 @@ export const tickets = pgTable('tickets', {
   checkedInBy: uuid('checked_in_by').references(() => users.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Phase 5: Announcements ─────────────────────────────────────────────────────────
+
+export const announcements = pgTable('announcements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  bodyMarkdown: text('body_markdown').notNull(),
+  category: text('category', { enum: ['meeting', 'deadline', 'event', 'change_of_plan', 'general'] }).notNull().default('general'),
+  audience: text('audience', { enum: ['public', 'members'] }).notNull(),
+  channels: text('channels').array().notNull(), // PostgreSQL text[] is not straightforward if it's text array but let's see. Wait, drizzle string array requires text('col').array(). Wait! Let's check how drizzle handles arrays.
+  pinned: boolean('pinned').notNull().default(false),
+  status: text('status', { enum: ['draft', 'scheduled', 'published', 'archived'] }).notNull().default('draft'),
+  scheduledFor: timestamp('scheduled_for', { withTimezone: true }),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  authorId: uuid('author_id').notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const announcementRevisions = pgTable('announcement_revisions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  announcementId: uuid('announcement_id').notNull().references(() => announcements.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  bodyMarkdown: text('body_markdown').notNull(),
+  editedBy: uuid('edited_by').notNull().references(() => users.id),
+  editedAt: timestamp('edited_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const announcementDeliveries = pgTable('announcement_deliveries', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  announcementId: uuid('announcement_id').notNull().unique().references(() => announcements.id, { onDelete: 'cascade' }),
+  recipientsCount: integer('recipients_count').notNull().default(0),
+  sentCount: integer('sent_count').notNull().default(0),
+  failedCount: integer('failed_count').notNull().default(0),
+  startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+});
+
+// ─── Phase 6: Merch Shop ───────────────────────────────────────────────
+
+export const products = pgTable('products', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  imageUrls: text('image_urls').array(),
+  basePricePaise: integer('base_price_paise').notNull(),
+  status: text('status', { enum: ['draft', 'active', 'archived'] }).notNull().default('draft'),
+  maxPerUser: integer('max_per_user'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const productVariants = pgTable('product_variants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  productId: uuid('product_id').notNull().references(() => products.id),
+  label: text('label').notNull(), // e.g. 'S', 'M', 'L', 'XL'
+  sku: text('sku').notNull(),
+  stockOnHand: integer('stock_on_hand').notNull().default(0),
+  stockHeld: integer('stock_held').notNull().default(0),
+  priceOverridePaise: integer('price_override_paise'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const carts = pgTable('carts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id).unique(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const cartItems = pgTable('cart_items', {
+  cartId: uuid('cart_id').notNull().references(() => carts.id),
+  variantId: uuid('variant_id').notNull().references(() => productVariants.id),
+  qty: integer('qty').notNull(),
+}, (t) => ({
+  pk: uniqueIndex('unique_cart_variant').on(t.cartId, t.variantId),
+}));
+
+export const merchOrders = pgTable('merch_orders', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderNumber: text('order_number').notNull().unique(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  totalPaise: integer('total_paise').notNull(),
+  status: text('status', { enum: ['pending_payment', 'paid', 'ready_for_pickup', 'collected', 'cancelled', 'refunded'] }).notNull().default('pending_payment'),
+  paymentId: uuid('payment_id').references(() => payments.id),
+  collectedAt: timestamp('collected_at', { withTimezone: true }),
+  collectedBy: uuid('collected_by').references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const merchOrderItems = pgTable('merch_order_items', {
+  orderId: uuid('order_id').notNull().references(() => merchOrders.id),
+  variantId: uuid('variant_id').notNull().references(() => productVariants.id),
+  productName: text('product_name').notNull(),
+  variantLabel: text('variant_label').notNull(),
+  unitPricePaise: integer('unit_price_paise').notNull(),
+  qty: integer('qty').notNull(),
+}, (t) => ({
+  pk: uniqueIndex('unique_order_variant').on(t.orderId, t.variantId),
+}));
+
+export const stockMovements = pgTable('stock_movements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  variantId: uuid('variant_id').notNull().references(() => productVariants.id),
+  delta: integer('delta').notNull(),
+  reason: text('reason', { enum: ['restock', 'sale', 'refund', 'adjustment'] }).notNull(),
+  refId: text('ref_id'),
+  by: uuid('by').references(() => users.id),
+  at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+});

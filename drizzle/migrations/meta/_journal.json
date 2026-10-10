@@ -29,6 +29,20 @@
       "when": 1791622073057,
       "tag": "0003_cynical_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791622806799,
+      "tag": "0004_lively_mojo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791623360184,
+      "tag": "0005_steady_sentry",
+      "breakpoints": true
     }
   ]
 }
