@@ -56,8 +56,11 @@ export function PayClientModal({ keyId, rzOrderId, amountPaise }: PayClientModal
 
               if (verifyRes.ok) {
                 router.push('/account/orders?success=1');
+                router.refresh();
               } else {
-                router.push('/checkout/failed');
+                const vErr = await verifyRes.json().catch(() => ({}));
+                setError(vErr.error || 'Payment verification failed');
+                setLoading(false);
               }
             } catch (err: any) {
               setError(err.message || 'Payment verification failed');
@@ -111,6 +114,7 @@ export function PayClientModal({ keyId, rzOrderId, amountPaise }: PayClientModal
       }
 
       router.push('/account/orders?success=1');
+      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Payment simulation failed');
       setDemoLoading(false);

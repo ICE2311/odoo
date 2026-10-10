@@ -137,10 +137,29 @@ export async function createPendingMembership() {
   return mem.id;
 }
 
+import { revalidatePath } from 'next/cache';
+
 export async function purchaseMembershipDirectAction() {
   const caller = await requireUser();
   const memId = await createPendingMembership();
   const checkoutData = await createCheckout('membership', memId, caller);
   await verifyClientPayment(checkoutData.rzOrderId, 'pay_direct_dev', 'simulated');
+  revalidatePath('/account/membership');
+  revalidatePath('/account');
+  revalidatePath('/cart');
   return { success: true };
 }
+
+export async function confirmMembershipPaymentAction(
+  rzOrderId: string,
+  rzPaymentId: string,
+  signature: string
+) {
+  await requireUser();
+  await verifyClientPayment(rzOrderId, rzPaymentId, signature);
+  revalidatePath('/account/membership');
+  revalidatePath('/account');
+  revalidatePath('/cart');
+  return { success: true };
+}
+

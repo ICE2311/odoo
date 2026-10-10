@@ -55,25 +55,39 @@ registerPurpose('membership', {
     return (setting?.valueJson as number) ?? 50000;
   },
   onCaptured: async ({ tx, payment }) => {
-    const memId = payment.purposeId;
-    const [mem] = await tx.select().from(memberships).where(eq(memberships.id, memId));
-    if (!mem || mem.status !== 'pending') throw new Error('Invalid or already active membership');
+    const memId = payment.purposeId || payment.purpose_id;
+    if (!memId) throw new Error('Missing membership purpose ID');
 
-    // Re-verify dates inside tx just in case
+    const [mem] = await tx.select().from(memberships).where(eq(memberships.id, memId));
+    if (!mem) throw new Error('Membership record not found');
+    if (mem.status === 'active') return; // Idempotent
+
+    // Use pre-calculated dates or compute if needed
     const now = new Date();
-    const dates = await calculateMembershipDates(mem.userId, now);
+    let startsAt = mem.startsAt;
+    let endsAt = mem.endsAt;
+    if (!startsAt || !endsAt) {
+      try {
+        const dates = await calculateMembershipDates(mem.userId, now);
+        startsAt = dates.startsAt;
+        endsAt = dates.endsAt;
+      } catch {
+        startsAt = now;
+        endsAt = await getSeasonEndDate(now);
+      }
+    }
 
     await tx.update(memberships).set({
       status: 'active',
-      startsAt: dates.startsAt,
-      endsAt: dates.endsAt,
+      startsAt,
+      endsAt,
       paymentId: payment.id,
       method: 'razorpay'
     }).where(eq(memberships.id, memId));
 
     await recordEntry(tx, {
       direction: 'in',
-      amountPaise: payment.amountPaise,
+      amountPaise: payment.amountPaise || payment.amount_paise || mem.pricePaise || 50000,
       category: 'membership_dues',
       method: 'razorpay',
       sourceType: 'membership',
@@ -81,35 +95,43 @@ registerPurpose('membership', {
       description: 'Membership Dues',
     });
 
-    const [user] = await tx.select().from(users).where(eq(users.id, mem.userId));
-    if (user && user.email) {
-      await enqueueEmail({
-        toEmail: user.email,
-        subject: 'Welcome to Skyline SSA!',
-        html: `<p>Your membership is confirmed! View your card in your account.</p>`,
-        text: `Your membership is confirmed! View your card in your account.`,
-        kind: 'transactional',
-        refType: 'membership',
-        refId: memId
-      }, tx);
+    try {
+      const [user] = await tx.select().from(users).where(eq(users.id, mem.userId));
+      if (user && user.email) {
+        await enqueueEmail({
+          toEmail: user.email,
+          subject: 'Welcome to Skyline SSA!',
+          html: `<p>Your membership is confirmed! View your card in your account.</p>`,
+          text: `Your membership is confirmed! View your card in your account.`,
+          kind: 'transactional',
+          refType: 'membership',
+          refId: memId
+        }, tx);
+      }
+    } catch (err) {
+      console.warn('Membership welcome email enqueue skipped:', err);
     }
   },
   onFailed: async ({ tx, payment }) => {
-    const memId = payment.purposeId;
-    await tx.update(memberships).set({ status: 'cancelled' }).where(eq(memberships.id, memId));
+    const memId = payment.purposeId || payment.purpose_id;
+    if (memId) {
+      await tx.update(memberships).set({ status: 'cancelled' }).where(eq(memberships.id, memId));
+    }
   },
   onRefunded: async ({ tx, payment, refund }) => {
-    const memId = payment.purposeId;
-    await tx.update(memberships).set({ status: 'refunded' }).where(eq(memberships.id, memId));
-    await recordEntry(tx, {
-      direction: 'out',
-      amountPaise: refund.amountPaise,
-      category: 'refund',
-      method: 'razorpay',
-      sourceType: 'membership_refund',
-      sourceId: refund.id,
-      description: 'Membership Refund',
-    });
+    const memId = payment.purposeId || payment.purpose_id;
+    if (memId) {
+      await tx.update(memberships).set({ status: 'refunded' }).where(eq(memberships.id, memId));
+      await recordEntry(tx, {
+        direction: 'out',
+        amountPaise: refund.amountPaise || refund.amount_paise,
+        category: 'refund',
+        method: 'razorpay',
+        sourceType: 'membership_refund',
+        sourceId: refund.id,
+        description: 'Membership Refund',
+      });
+    }
   }
 });
 

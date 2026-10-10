@@ -11,10 +11,16 @@ registerPurpose('ticket_order', {
     return order.totalPaise;
   },
   onCaptured: async ({ tx, payment }) => {
-    await captureTicketOrder(payment.purposeId, payment.razorpayPaymentId || undefined);
+    const purposeId = payment.purposeId || payment.purpose_id;
+    const rzPaymentId = payment.razorpayPaymentId || payment.razorpay_payment_id;
+    if (purposeId) {
+      await captureTicketOrder(purposeId, rzPaymentId || undefined);
+    }
   },
   onFailed: async ({ tx, payment }) => {
-    const [order] = await tx.select().from(ticketOrders).where(eq(ticketOrders.id, payment.purposeId));
+    const purposeId = payment.purposeId || payment.purpose_id;
+    if (!purposeId) return;
+    const [order] = await tx.select().from(ticketOrders).where(eq(ticketOrders.id, purposeId));
     if (order && order.status === 'pending') {
       await tx.update(ticketOrders).set({ status: 'cancelled' }).where(eq(ticketOrders.id, order.id));
       await tx.execute(
@@ -23,7 +29,9 @@ registerPurpose('ticket_order', {
     }
   },
   onRefunded: async ({ tx, payment, refund }) => {
-    const [order] = await tx.select().from(ticketOrders).where(eq(ticketOrders.id, payment.purposeId));
+    const purposeId = payment.purposeId || payment.purpose_id;
+    if (!purposeId) return;
+    const [order] = await tx.select().from(ticketOrders).where(eq(ticketOrders.id, purposeId));
     if (order) {
       await tx.update(ticketOrders).set({ status: 'refunded' }).where(eq(ticketOrders.id, order.id));
       await tx.execute(
@@ -31,7 +39,7 @@ registerPurpose('ticket_order', {
       );
       await tx.insert(ledgerEntries).values({
         direction: 'out',
-        amountPaise: refund.amountPaise,
+        amountPaise: refund.amountPaise || refund.amount_paise,
         category: 'refund',
         method: 'razorpay',
         sourceType: 'ticket_order',

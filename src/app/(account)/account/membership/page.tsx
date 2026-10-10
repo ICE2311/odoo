@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, ArrowRight, Sparkles, CheckCircle2, QrCode, AlertCircle, Clock, RefreshCw } from 'lucide-react';
-import { getMembershipPageData, createPendingMembership } from './actions';
+import { getMembershipPageData, createPendingMembership, confirmMembershipPaymentAction } from './actions';
 import Image from 'next/image';
 
 interface MembershipData {
@@ -23,6 +24,7 @@ interface MembershipData {
 }
 
 export default function MembershipPage() {
+  const router = useRouter();
   const [data, setData] = useState<MembershipData | null>(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
@@ -83,23 +85,15 @@ export default function MembershipPage() {
 
       // 3. Handle Development / Simulated Mode (when Razorpay keys are not yet configured)
       if (checkoutData.isSimulated) {
-        const verifyRes = await fetch('/api/checkout/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rzOrderId: checkoutData.rzOrderId,
-            rzPaymentId: 'pay_simulated_' + Date.now(),
-            signature: 'simulated',
-          }),
-        });
-
-        if (!verifyRes.ok) {
-          const vData = await verifyRes.json();
-          throw new Error(vData.error || 'Payment capture failed');
-        }
+        await confirmMembershipPaymentAction(
+          checkoutData.rzOrderId,
+          'pay_simulated_' + Date.now(),
+          'simulated'
+        );
 
         setSuccessMsg('🎉 Membership activated successfully! Welcome to Skyline SSA.');
         await loadData();
+        router.refresh();
         return;
       }
 
@@ -119,23 +113,15 @@ export default function MembershipPage() {
         handler: async function (response: any) {
           try {
             setPaying(true);
-            const verifyRes = await fetch('/api/checkout/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                rzOrderId: response.razorpay_order_id,
-                rzPaymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-              }),
-            });
-
-            if (!verifyRes.ok) {
-              const vData = await verifyRes.json();
-              throw new Error(vData.error || 'Payment verification failed');
-            }
+            await confirmMembershipPaymentAction(
+              response.razorpay_order_id,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            );
 
             setSuccessMsg('🎉 Payment successful! Your membership is now active.');
             await loadData();
+            router.refresh();
           } catch (e: any) {
             setErrorMsg(e.message || 'Payment confirmation error');
           } finally {
@@ -185,29 +171,22 @@ export default function MembershipPage() {
       const checkoutData = await createRes.json();
       if (!createRes.ok) throw new Error(checkoutData.error || 'Failed to initialize payment');
 
-      const verifyRes = await fetch('/api/checkout/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rzOrderId: checkoutData.rzOrderId,
-          rzPaymentId: 'pay_demo_' + Date.now(),
-          signature: 'simulated',
-        }),
-      });
-
-      if (!verifyRes.ok) {
-        const vData = await verifyRes.json();
-        throw new Error(vData.error || 'Payment capture failed');
-      }
+      await confirmMembershipPaymentAction(
+        checkoutData.rzOrderId,
+        'pay_demo_' + Date.now(),
+        'simulated'
+      );
 
       setSuccessMsg('🎉 Membership activated successfully! Welcome to Skyline SSA.');
       await loadData();
+      router.refresh();
     } catch (err: any) {
       setErrorMsg(err.message || 'Demo activation failed');
     } finally {
       setPaying(false);
     }
   };
+
 
   if (loading) {
     return (

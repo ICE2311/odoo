@@ -115,18 +115,42 @@ export async function capturePayment(rzPaymentId: string, rzOrderId: string) {
   await db.transaction(async (tx) => {
     // Lock the row
     const res = await tx.execute(
-      sql`SELECT * FROM payments WHERE razorpay_order_id = ${rzOrderId} FOR UPDATE`
+      sql`SELECT * FROM payments WHERE razorpay_order_id = ${rzOrderId} OR id::text = ${rzOrderId} FOR UPDATE`
     );
-    const payment = res.rows?.[0] as any;
+    const raw = res.rows?.[0] as any;
 
-    if (!payment) throw new Error('Payment not found');
-    if (payment.status === 'captured') return;
+    if (!raw) throw new Error('Payment not found');
+    if (raw.status === 'captured') return;
 
-    await tx.update(payments).set({ status: 'captured', razorpayPaymentId: rzPaymentId }).where(eq(payments.id, payment.id));
+    await tx
+      .update(payments)
+      .set({ status: 'captured', razorpayPaymentId: rzPaymentId })
+      .where(eq(payments.id, raw.id));
+
+    // Normalize Postgres raw SQL row (snake_case) to standard camelCase properties expected by handlers
+    const payment = {
+      id: raw.id,
+      userId: raw.userId ?? raw.user_id,
+      user_id: raw.user_id ?? raw.userId,
+      purpose: raw.purpose,
+      purposeId: raw.purposeId ?? raw.purpose_id,
+      purpose_id: raw.purpose_id ?? raw.purposeId,
+      amountPaise: Number(raw.amountPaise ?? raw.amount_paise),
+      amount_paise: Number(raw.amount_paise ?? raw.amountPaise),
+      currency: raw.currency,
+      status: 'captured',
+      razorpayOrderId: raw.razorpayOrderId ?? raw.razorpay_order_id,
+      razorpayPaymentId: rzPaymentId,
+      razorpay_order_id: raw.razorpay_order_id ?? raw.razorpayOrderId,
+      razorpay_payment_id: rzPaymentId,
+      failureReason: raw.failureReason ?? raw.failure_reason,
+      createdAt: raw.createdAt ?? raw.created_at,
+      updatedAt: raw.updatedAt ?? raw.updated_at,
+    };
 
     const handler = registry[payment.purpose];
     if (handler) {
-      await handler.onCaptured({ tx, payment: { ...payment, status: 'captured', razorpayPaymentId: rzPaymentId } });
+      await handler.onCaptured({ tx, payment });
     }
   });
 }

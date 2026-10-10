@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.redirect(new URL('/login?next=/cart', req.url), 303);
     }
 
-    if (!caller.isMember) {
+    if (!caller.isMember && !caller.isAdmin) {
       if (isJson) {
         return NextResponse.json(
           { error: 'Forbidden: Active membership required to purchase merchandise.' },

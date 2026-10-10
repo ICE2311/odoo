@@ -49,7 +49,7 @@ export async function requireUser() {
 
 export async function requireMember() {
   const caller = await requireUser();
-  if (!caller.isMember) throw new Error('FORBIDDEN: Active membership required');
+  if (!caller.isMember && !caller.isAdmin) throw new Error('FORBIDDEN: Active membership required');
   return caller;
 }
 
