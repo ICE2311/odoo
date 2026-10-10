@@ -12,6 +12,7 @@ import { users, accounts, sessions, verificationTokens } from '@/server/db/schem
 
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,

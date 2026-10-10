@@ -21,7 +21,7 @@ function getTransporter(): Transporter | null {
     host: SMTP_HOST,
     port: Number(SMTP_PORT ?? 587),
     secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    auth: { user: SMTP_USER, pass: SMTP_PASS.replace(/\s+/g, '') },
     pool: true,
     maxConnections: 5,
     maxMessages: 100,
