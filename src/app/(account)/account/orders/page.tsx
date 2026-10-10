@@ -50,10 +50,10 @@ export default async function MyOrdersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">
-                      {order.items.reduce((acc: number, i: any) => acc + i.quantity, 0)} items
+                      {order.items.reduce((acc: number, i: any) => acc + (i.qty ?? i.quantity ?? 0), 0)} items
                     </td>
                     <td className="px-6 py-4 font-semibold text-foreground">
-                      ₹{(order.totalAmount / 100).toFixed(2)}
+                      ₹{(((order.totalPaise ?? order.totalAmount ?? 0)) / 100).toFixed(2)}
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={order.status} />

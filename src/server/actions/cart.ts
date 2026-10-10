@@ -1,15 +1,19 @@
 'use server';
 
 import { db } from '@/server/db';
-import { carts, cartItems, productVariants, products } from '@/server/db/schema';
+import { carts, cartItems, productVariants } from '@/server/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { requireMember } from '@/server/auth/guards';
+import { requireUser } from '@/server/auth/guards';
 import { createMerchCheckout } from '@/server/services/merch';
+import { revalidatePath } from 'next/cache';
 
 export async function addToCartAction(variantId: string, qty: number) {
-  const caller = await requireMember();
+  const caller = await requireUser();
+  if (!caller.isMember && !caller.isAdmin) {
+    throw new Error('Active membership required to purchase merchandise');
+  }
 
-  return await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     // Get or create cart
     let cart = await tx.query.carts.findFirst({
       where: eq(carts.userId, caller.user.id),
@@ -51,10 +55,13 @@ export async function addToCartAction(variantId: string, qty: number) {
 
     return { success: true };
   });
+
+  revalidatePath('/cart');
+  return result;
 }
 
 export async function removeFromCartAction(variantId: string) {
-  const caller = await requireMember();
+  const caller = await requireUser();
 
   const cart = await db.query.carts.findFirst({
     where: eq(carts.userId, caller.user.id),
@@ -64,11 +71,12 @@ export async function removeFromCartAction(variantId: string) {
 
   await db.delete(cartItems).where(and(eq(cartItems.cartId, cart.id), eq(cartItems.variantId, variantId)));
 
+  revalidatePath('/cart');
   return { success: true };
 }
 
 export async function updateCartQtyAction(variantId: string, newQty: number) {
-  const caller = await requireMember();
+  const caller = await requireUser();
 
   if (newQty <= 0) return removeFromCartAction(variantId);
 
@@ -92,11 +100,17 @@ export async function updateCartQtyAction(variantId: string, newQty: number) {
     .set({ qty: newQty })
     .where(and(eq(cartItems.cartId, cart.id), eq(cartItems.variantId, variantId)));
 
+  revalidatePath('/cart');
   return { success: true };
 }
 
 export async function checkoutCartAction() {
-  const caller = await requireMember();
+  const caller = await requireUser();
+  if (!caller.isMember && !caller.isAdmin) {
+    throw new Error('Active membership required to purchase merchandise');
+  }
   const { order, payment } = await createMerchCheckout(caller.user.id);
+  revalidatePath('/cart');
+  revalidatePath('/account/orders');
   return { orderId: order.id, paymentId: payment.id };
 }
