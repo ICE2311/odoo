@@ -17,9 +17,13 @@ export { registry, registerPurpose, type PurposeHandler, type PaymentContext };
 // Pre-load purpose handlers so the registry is always populated
 import './membership';
 import './merch-registry';
+import './ticket-registry';
 import './test_purchase';
 
 function getRazorpay(): Razorpay | null {
+  if (process.env.PAYMENT_SIMULATION === 'true') {
+    return null;
+  }
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
   if (!keyId || !keySecret || keyId === 'rzp_test_placeholder') {
@@ -88,7 +92,7 @@ export async function createCheckout(
 }
 
 export async function verifyClientPayment(rzOrderId: string, rzPaymentId: string, signature: string) {
-  if (rzOrderId.startsWith('order_sim_')) {
+  if (rzOrderId.startsWith('order_sim_') || signature === 'simulated' || process.env.PAYMENT_SIMULATION === 'true') {
     // Simulated instant payment in development / test
     await capturePayment(rzPaymentId || 'pay_simulated', rzOrderId);
     return;

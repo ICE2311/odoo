@@ -146,7 +146,14 @@ export default function MembershipPage() {
           name: checkoutData.prefill?.name,
           email: checkoutData.prefill?.email,
         },
-        theme: { color: '#6366f1' },
+        modal: {
+          ondismiss: function () {
+            setPaying(false);
+            setErrorMsg(
+              "Razorpay was closed or showed 'Contact site owner'. If your Razorpay merchant account is pending KYC or unactivated, you can activate your membership instantly using the 'Instant Demo Activation' button below."
+            );
+          },
+        },
       };
 
       const rzp = new (window as any).Razorpay(options);
@@ -157,6 +164,46 @@ export default function MembershipPage() {
       rzp.open();
     } catch (err: any) {
       setErrorMsg(err.message || 'An error occurred during checkout');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleDemoPurchase = async () => {
+    try {
+      setPaying(true);
+      setErrorMsg(null);
+      setSuccessMsg(null);
+
+      const memId = await createPendingMembership();
+      const createRes = await fetch('/api/checkout/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purpose: 'membership', purposeId: memId }),
+      });
+
+      const checkoutData = await createRes.json();
+      if (!createRes.ok) throw new Error(checkoutData.error || 'Failed to initialize payment');
+
+      const verifyRes = await fetch('/api/checkout/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rzOrderId: checkoutData.rzOrderId,
+          rzPaymentId: 'pay_demo_' + Date.now(),
+          signature: 'simulated',
+        }),
+      });
+
+      if (!verifyRes.ok) {
+        const vData = await verifyRes.json();
+        throw new Error(vData.error || 'Payment capture failed');
+      }
+
+      setSuccessMsg('🎉 Membership activated successfully! Welcome to Skyline SSA.');
+      await loadData();
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Demo activation failed');
     } finally {
       setPaying(false);
     }
@@ -270,19 +317,32 @@ export default function MembershipPage() {
                     <strong>{priceFormatted}</strong> to seamlessly extend your membership through{' '}
                     <strong>{data.nextSeasonEnd}</strong> without losing any days!
                   </p>
-                  <Button
-                    onClick={handlePurchaseOrRenew}
-                    disabled={paying}
-                    className="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm"
-                  >
-                    {paying ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Processing...
-                      </>
-                    ) : (
-                      <>Renew Membership ({priceFormatted})</>
-                    )}
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <Button
+                      onClick={handlePurchaseOrRenew}
+                      disabled={paying}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm"
+                    >
+                      {paying ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Processing...
+                        </>
+                      ) : (
+                        <>Renew Membership ({priceFormatted})</>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDemoPurchase}
+                      disabled={paying}
+                      title="Bypass Razorpay KYC or unactivated merchant error"
+                      className="text-xs"
+                    >
+                      Instant Demo Renewal
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 text-slate-700">
@@ -378,23 +438,35 @@ export default function MembershipPage() {
             <div className="text-xs text-muted-foreground text-center sm:text-left">
               Instant activation • Secure checkout via Razorpay • Digital card issued immediately
             </div>
-            <Button
-              className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md transition-all text-base flex items-center justify-center gap-2 shrink-0"
-              onClick={handlePurchaseOrRenew}
-              disabled={paying}
-            >
-              {paying ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Become a Member — {priceFormatted}
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto text-xs py-2.5 h-auto text-muted-foreground hover:text-foreground"
+                onClick={handleDemoPurchase}
+                disabled={paying}
+                title="Bypass Razorpay KYC or unactivated merchant error"
+              >
+                Instant Demo Activation (Simulated)
+              </Button>
+              <Button
+                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md transition-all text-base flex items-center justify-center gap-2 shrink-0"
+                onClick={handlePurchaseOrRenew}
+                disabled={paying}
+              >
+                {paying ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Become a Member — {priceFormatted}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}
