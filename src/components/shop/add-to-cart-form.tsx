@@ -195,3 +195,4 @@ export function AddToCartForm({ productId, variants = [] }: AddToCartFormProps) 
 }
 
 export default AddToCartForm;
+
