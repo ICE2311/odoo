@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -10,40 +8,65 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# Testing & Coverage
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+.playwright/
 
-# next.js
+# Next.js Build Output
 /.next/
 /out/
-
-# production
 /build
+/dist
 
-# misc
+# TypeScript & Cache
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment Files (Keep .env.example tracked)
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# IDE & Editor Directories
+.vscode/
+.claude/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# OS Generated Files
 .DS_Store
-*.pem
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# debug
+# Logs & Debugging
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
+# Vercel & Deployment
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Certificates & Keys
+*.pem
+*.key
+*.cert
 
+# Internal Phase Prompts & Setup Scripts
 PROJECT_SPEC.md
-PHASE_4_PROMPT.md
-PHASE_5_PROMPT.md
-PHASE_6_PROMPT.md
-PHASE_7_PROMPT.md
-phase3_setup.sh
-phase2_setup.sh
+PHASE_*_PROMPT.md
+phase*_setup.sh
