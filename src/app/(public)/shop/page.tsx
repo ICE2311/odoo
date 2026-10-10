@@ -8,11 +8,26 @@ export default async function ShopPage() {
 
   return (
     <div className="py-12 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+      <div className="text-center max-w-2xl mx-auto mb-12 space-y-4">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">Skyline Shop</h1>
         <p className="text-lg text-muted-foreground">
           Show your pride with official Skyline Student Association merchandise.
         </p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href="/cart"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 shadow-sm transition-opacity"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            View Cart
+          </Link>
+          <Link
+            href="/account/orders"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted text-foreground text-sm font-semibold shadow-sm transition-colors"
+          >
+            My Orders
+          </Link>
+        </div>
       </div>
 
       {merch.length === 0 ? (

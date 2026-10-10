@@ -467,7 +467,11 @@ export const ledgerEntriesRelations = relations(ledgerEntries, ({ one }) => ({
   }),
 }));
 
-export const merchOrdersRelations = relations(merchOrders, ({ many }) => ({
+export const merchOrdersRelations = relations(merchOrders, ({ one, many }) => ({
+  user: one(users, {
+    fields: [merchOrders.userId],
+    references: [users.id],
+  }),
   items: many(merchOrderItems),
 }));
 

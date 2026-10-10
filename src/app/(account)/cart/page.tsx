@@ -18,11 +18,19 @@ export default async function CartPage(props: CartPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pt-8 px-4 sm:px-6">
-      <div className="flex items-center gap-3 border-b border-border pb-4">
-        <div className="p-2 bg-primary/10 rounded-[var(--radius-md)] text-primary">
-          <ShoppingBag className="w-6 h-6" />
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-[var(--radius-md)] text-primary">
+            <ShoppingBag className="w-6 h-6" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Shopping Cart</h1>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Shopping Cart</h1>
+        <Link
+          href="/account/orders"
+          className="text-sm font-semibold text-primary hover:underline"
+        >
+          View My Orders →
+        </Link>
       </div>
 
       {errorParam && (
@@ -37,12 +45,20 @@ export default async function CartPage(props: CartPageProps) {
           <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
           <h2 className="text-xl font-bold text-foreground mb-2">Your cart is empty</h2>
           <p className="text-muted-foreground mb-6">Looks like you haven't added any merch yet.</p>
-          <Link
-            href="/shop"
-            className="inline-block px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90 shadow-sm transition-opacity"
-          >
-            Start Shopping
-          </Link>
+          <div className="flex items-center justify-center gap-3">
+            <Link
+              href="/shop"
+              className="inline-block px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-[var(--radius-md)] hover:opacity-90 shadow-sm transition-opacity text-sm"
+            >
+              Start Shopping
+            </Link>
+            <Link
+              href="/account/orders"
+              className="inline-block px-6 py-2.5 border border-border bg-card text-foreground font-semibold rounded-[var(--radius-md)] hover:bg-muted shadow-sm transition-colors text-sm"
+            >
+              View My Orders
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-8">

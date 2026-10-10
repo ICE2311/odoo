@@ -27,5 +27,19 @@ export async function getAdminProduct(id: string) {
 
 export async function getAdminOrders() {
   await requireAdmin();
-  return await db.select().from(merchOrders).orderBy(desc(merchOrders.createdAt));
+  return await db.query.merchOrders.findMany({
+    with: {
+      items: true,
+      user: {
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+          studentId: true,
+        },
+      },
+    },
+    orderBy: [desc(merchOrders.createdAt)],
+  });
 }
+

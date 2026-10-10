@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getCaller } from '@/server/auth/guards';
-import { Menu, User, Sparkles } from 'lucide-react';
+import { Menu, User, Sparkles, ShoppingBag } from 'lucide-react';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const caller = await getCaller();
@@ -21,14 +21,32 @@ export default async function PublicLayout({ children }: { children: React.React
             <Link href="/announcements" className="hover:text-primary transition-colors">Announcements</Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {caller.kind === 'user' ? (
-              <Link href="/account" className="flex items-center gap-2 bg-muted px-4 py-2 rounded-full hover:bg-muted/80 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  {caller.user.name?.[0] || 'U'}
-                </div>
-                <span className="text-sm font-medium">My Account</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/cart"
+                  className="p-2 rounded-full text-foreground/80 hover:text-primary hover:bg-muted transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                  title="Shopping Cart"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span className="hidden sm:inline">Cart</span>
+                </Link>
+
+                <Link
+                  href="/account/orders"
+                  className="hidden md:inline-flex px-3 py-1.5 text-xs font-semibold text-foreground/80 hover:text-primary hover:bg-muted rounded-full transition-colors"
+                >
+                  My Orders
+                </Link>
+
+                <Link href="/account" className="flex items-center gap-2 bg-muted px-3.5 py-1.5 rounded-full hover:bg-muted/80 transition-colors">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {caller.user.name?.[0] || 'U'}
+                  </div>
+                  <span className="text-sm font-medium">Account</span>
+                </Link>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/login" className="hidden md:inline-block px-4 py-2 text-sm font-medium hover:text-primary transition-colors">Sign In</Link>
