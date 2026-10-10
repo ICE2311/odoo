@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getCaller } from '@/server/auth/guards';
-import { Menu, X, Moon, Sun } from 'lucide-react';
-import { useState } from 'react';
+import { Menu } from 'lucide-react';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const caller = await getCaller();
