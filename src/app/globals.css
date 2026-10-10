@@ -1,111 +1,92 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Design tokens: Modern SaaS style (neutral + one accent)                    */
-/* Light mode (default) and dark mode (@media ... .dark)                      */
+/* Modern Premium Design System - Skyline Student Association                 */
+/* Dark-first, gradient accents, smooth animations, premium typography        */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Neutral greys — oklch for perceptually uniform lightness */
-  --background: oklch(99% 0 0);
-  --foreground: oklch(20% 0 0);
-  --card: oklch(100% 0 0);
-  --card-foreground: oklch(20% 0 0);
-  --popover: oklch(100% 0 0);
-  --popover-foreground: oklch(20% 0 0);
+  /* Premium dark palette - oklch for consistency */
+  --background: oklch(8% 0 0);
+  --foreground: oklch(95% 0 0);
 
-  /* Primary accent — blue, modern SaaS style */
-  --primary: oklch(50% 0.15 260);
+  /* Cards & surfaces - subtle depth */
+  --card: oklch(12% 0.01 0);
+  --card-foreground: oklch(95% 0 0);
+  --popover: oklch(15% 0.01 0);
+  --popover-foreground: oklch(95% 0 0);
+
+  /* Primary accent - vibrant blue-purple gradient */
+  --primary: oklch(58% 0.18 280);
   --primary-foreground: oklch(100% 0 0);
 
-  /* Secondary — muted blue */
-  --secondary: oklch(93% 0.03 260);
-  --secondary-foreground: oklch(20% 0 0);
+  /* Secondary - softer accent */
+  --secondary: oklch(45% 0.15 280);
+  --secondary-foreground: oklch(100% 0 0);
 
-  /* Muted — light grey for disabled, placeholder */
-  --muted: oklch(89% 0.01 0);
-  --muted-foreground: oklch(45% 0 0);
+  /* Accent - cyan for highlights */
+  --accent: oklch(65% 0.16 200);
+  --accent-foreground: oklch(8% 0 0);
 
-  /* Accent — same as primary for consistency */
-  --accent: oklch(50% 0.15 260);
-  --accent-foreground: oklch(100% 0 0);
-
-  /* Destructive — red for errors, delete actions */
-  --destructive: oklch(55% 0.21 29);
+  /* Semantic colors */
+  --destructive: oklch(60% 0.22 29);
   --destructive-foreground: oklch(100% 0 0);
 
-  /* Borders and outlines */
-  --border: oklch(92% 0.01 0);
-  --input: oklch(98% 0.01 0);
-  --ring: oklch(50% 0.15 260);
+  --success: oklch(65% 0.18 142);
+  --success-foreground: oklch(8% 0 0);
 
-  /* Radius scale for rounded corners */
-  --radius: 6px;
+  --warning: oklch(70% 0.19 70);
+  --warning-foreground: oklch(8% 0 0);
+
+  /* UI elements */
+  --muted: oklch(25% 0.01 0);
+  --muted-foreground: oklch(70% 0 0);
+
+  --border: oklch(18% 0.01 0);
+  --input: oklch(14% 0.01 0);
+  --ring: oklch(58% 0.18 280);
+
+  /* Spacing & radius */
+  --radius: 8px;
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, oklch(58% 0.18 280) 0%, oklch(65% 0.16 200) 100%);
+  --gradient-subtle: linear-gradient(135deg, oklch(12% 0.01 0) 0%, oklch(15% 0.01 0) 100%);
 }
 
-/* Dark mode: inverted tones while maintaining contrast and readability */
-@media (prefers-color-scheme: dark) {
+/* Light mode for accessibility */
+@media (prefers-color-scheme: light) {
   :root {
-    --background: oklch(12% 0 0);
-    --foreground: oklch(93% 0 0);
-    --card: oklch(18% 0 0);
-    --card-foreground: oklch(93% 0 0);
-    --popover: oklch(18% 0 0);
-    --popover-foreground: oklch(93% 0 0);
-
-    --primary: oklch(65% 0.15 260);
-    --primary-foreground: oklch(12% 0 0);
-
-    --secondary: oklch(32% 0.02 260);
-    --secondary-foreground: oklch(93% 0 0);
-
-    --muted: oklch(38% 0.01 0);
-    --muted-foreground: oklch(65% 0 0);
-
-    --accent: oklch(65% 0.15 260);
-    --accent-foreground: oklch(12% 0 0);
-
-    --destructive: oklch(65% 0.21 29);
-    --destructive-foreground: oklch(12% 0 0);
-
-    --border: oklch(27% 0.01 0);
-    --input: oklch(22% 0.01 0);
-    --ring: oklch(65% 0.15 260);
+    --background: oklch(98% 0 0);
+    --foreground: oklch(12% 0 0);
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(12% 0 0);
+    --popover: oklch(100% 0 0);
+    --popover-foreground: oklch(12% 0 0);
+    --muted: oklch(88% 0 0);
+    --muted-foreground: oklch(45% 0 0);
+    --border: oklch(90% 0.01 0);
+    --input: oklch(95% 0 0);
   }
 }
 
-/* Class-based dark mode (for theme toggles) */
+/* Class-based dark mode override */
 :root[data-theme="dark"],
 :root.dark {
-  --background: oklch(12% 0 0);
-  --foreground: oklch(93% 0 0);
-  --card: oklch(18% 0 0);
-  --card-foreground: oklch(93% 0 0);
-  --popover: oklch(18% 0 0);
-  --popover-foreground: oklch(93% 0 0);
-
-  --primary: oklch(65% 0.15 260);
-  --primary-foreground: oklch(12% 0 0);
-
-  --secondary: oklch(32% 0.02 260);
-  --secondary-foreground: oklch(93% 0 0);
-
-  --muted: oklch(38% 0.01 0);
-  --muted-foreground: oklch(65% 0 0);
-
-  --accent: oklch(65% 0.15 260);
-  --accent-foreground: oklch(12% 0 0);
-
-  --destructive: oklch(65% 0.21 29);
-  --destructive-foreground: oklch(12% 0 0);
-
-  --border: oklch(27% 0.01 0);
-  --input: oklch(22% 0.01 0);
-  --ring: oklch(65% 0.15 260);
+  --background: oklch(8% 0 0);
+  --foreground: oklch(95% 0 0);
+  --card: oklch(12% 0.01 0);
+  --card-foreground: oklch(95% 0 0);
+  --popover: oklch(15% 0.01 0);
+  --popover-foreground: oklch(95% 0 0);
+  --muted: oklch(25% 0.01 0);
+  --muted-foreground: oklch(70% 0 0);
+  --border: oklch(18% 0.01 0);
+  --input: oklch(14% 0.01 0);
 }
 
 @theme inline {
@@ -119,12 +100,12 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -139,16 +120,40 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  p {
+    @apply leading-relaxed;
   }
 }
 
-/* Utility: hide scrollbar (used in account layout nav and shop grid) */
+/* Utilities */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -156,4 +161,61 @@
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+}
+
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-subtle {
+  background: var(--gradient-subtle);
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

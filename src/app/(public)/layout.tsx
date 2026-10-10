@@ -1,53 +1,175 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
-import { getCaller } from '@/server/auth/guards'; // assuming next-auth is here, or we can just fetch session
+import { getCaller } from '@/server/auth/guards';
+import { Menu, X, Moon, Sun } from 'lucide-react';
+import { useState } from 'react';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const caller = await getCaller();
-  const session = caller.kind === "user" ? { user: caller.user } : null;
+  const session = caller.kind === 'user' ? { user: caller.user } : null;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-bold text-xl tracking-tight text-blue-600">
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+              <span className="text-white font-bold text-sm">S</span>
+            </div>
+            <span className="font-bold text-lg tracking-tight text-foreground group-hover:gradient-text transition-all">
               Skyline
+            </span>
+          </Link>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex gap-8 text-sm">
+            <Link href="/events" className="text-muted-foreground hover:text-foreground transition-colors">
+              Events
             </Link>
-            <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-600">
-              <Link href="/events" className="hover:text-blue-600 transition-colors">Events</Link>
-              <Link href="/shop" className="hover:text-blue-600 transition-colors">Shop</Link>
-              <Link href="/announcements" className="hover:text-blue-600 transition-colors">Announcements</Link>
-              <Link href="/volunteer" className="hover:text-blue-600 transition-colors">Volunteer</Link>
-            </nav>
-          </div>
-          
+            <Link href="/shop" className="text-muted-foreground hover:text-foreground transition-colors">
+              Shop
+            </Link>
+            <Link href="/announcements" className="text-muted-foreground hover:text-foreground transition-colors">
+              Announcements
+            </Link>
+            <Link href="/volunteer" className="text-muted-foreground hover:text-foreground transition-colors">
+              Volunteer
+            </Link>
+          </nav>
+
+          {/* Actions */}
           <div className="flex items-center gap-4">
             {session ? (
-              <Link href="/account" className="text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Dashboard</Link>
+              <Link
+                href="/account"
+                className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity text-sm"
+              >
+                Dashboard
+              </Link>
             ) : (
-              <Link href="/login" className="text-sm font-medium hover:text-blue-600 transition-colors">Sign In</Link>
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity text-sm"
+                >
+                  Join
+                </Link>
+              </>
             )}
-            
-            <button className="md:hidden p-2 text-gray-600">
-              <Menu className="w-6 h-6" />
+            <button className="p-2 text-muted-foreground hover:text-foreground transition-colors md:hidden">
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 w-full container mx-auto px-4 py-8">
-        {children}
+      {/* Main Content */}
+      <main className="flex-1 w-full">
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          {children}
+        </div>
       </main>
 
-      <footer className="border-t bg-white py-12 mt-auto">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} Skyline Student Association. All rights reserved.</p>
-          <div className="flex gap-4 mt-4 md:mt-0">
-            <Link href="/" className="hover:text-gray-900">Terms</Link>
-            <Link href="/" className="hover:text-gray-900">Privacy</Link>
-            <Link href="/admin" className="hover:text-gray-900">Admin</Link>
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/50 backdrop-blur mt-auto">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Product</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/events" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Events
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shop" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Shop
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/volunteer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Volunteer
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Community</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Discord
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Instagram
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Twitter
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Resources</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Support
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    FAQ
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Privacy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Terms
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-8 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Skyline Student Association. All rights reserved.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Built with care for students
+            </p>
           </div>
         </div>
       </footer>
