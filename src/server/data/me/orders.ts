@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { merchOrders, merchOrderItems, users } from '@/server/db/schema';
+import { merchOrders, desc } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireUser } from '@/server/auth/guards';
 
@@ -11,8 +11,9 @@ export async function getMyMerchOrders() {
     with: {
       items: true,
     },
-    orderBy: (t) => [db.desc(t.createdAt)],
+    orderBy: [desc(merchOrders.createdAt)],
   });
 
   return orders;
 }
+

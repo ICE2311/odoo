@@ -5,6 +5,22 @@ import { ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { formatPaise } from '@/lib/format';
 
+interface Product {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  imageUrls: string[] | null;
+  basePricePaise: number;
+  status: 'active' | 'draft' | 'archived';
+  variants: Array<{
+    id: string;
+    label: string;
+    stockOnHand: number;
+    stockHeld: number;
+  }>;
+}
+
 export default async function ShopPage() {
   const products = await getPublicProducts();
 
@@ -32,7 +48,7 @@ export default async function ShopPage() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((p) => (
+        {(products as Product[]).map((p) => (
           <Link
             key={p.id}
             href={`/shop/${p.slug}`}
@@ -51,7 +67,7 @@ export default async function ShopPage() {
                 </div>
               )}
               <div className="absolute bottom-2 left-2 right-2 flex gap-1 overflow-x-auto hide-scrollbar">
-                {p.variants.map((v) => {
+                {p.variants?.map((v) => {
                   const available = v.stockOnHand - v.stockHeld;
                   return (
                     <span
@@ -82,3 +98,4 @@ export default async function ShopPage() {
     </div>
   );
 }
+

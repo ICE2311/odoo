@@ -46,12 +46,12 @@ export default async function MyOrdersPage() {
                   {formatDate(order.createdAt)}
                 </p>
               </div>
-              <StatusBadge status={order.status} />
+              <StatusBadge status={order.status as any} />
             </div>
 
             {/* Line items */}
             <div className="space-y-3 py-4 border-y border-border">
-              {order.items.map((item) => (
+              {order.items?.map((item: any) => (
                 <div key={item.id} className="flex items-center justify-between text-sm">
                   <div>
                     <p className="font-medium">{item.productName}</p>
@@ -82,3 +82,4 @@ export default async function MyOrdersPage() {
     </div>
   );
 }
+
