@@ -12,7 +12,8 @@ async function main() {
     { key: 'hold_minutes', valueJson: 15 },
     { key: 'low_stock_threshold', valueJson: 5 },
     { key: 'reminder_days', valueJson: 7 },
-    { key: 'season_end_date', valueJson: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() }
+    { key: 'season_end_month_day', valueJson: '05-31' },
+    { key: 'renewal_window_days', valueJson: 30 }
   ]).onConflictDoNothing();
 
   const now = new Date();
@@ -53,6 +54,33 @@ async function main() {
       }).onConflictDoNothing(); // For demo, we just ignore if they have one or we could be more rigorous
     }
   }
+
+  console.log('Seeding Phase 4 Events...');
+  const { events } = await import('./schema');
+  
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const openDate = new Date();
+  openDate.setDate(openDate.getDate() - 1);
+  const closeDate = new Date(nextMonth);
+  closeDate.setDate(closeDate.getDate() - 1);
+
+  await db.insert(events).values([
+    {
+      title: 'Spring Gala',
+      slug: 'spring-gala',
+      description: 'The biggest event of the year!',
+      venue: 'Main Hall',
+      startsAt: nextMonth,
+      endsAt: new Date(nextMonth.getTime() + 4 * 60 * 60 * 1000),
+      capacity: 300,
+      memberPricePaise: 20000, // ₹200
+      nonMemberPricePaise: 50000, // ₹500
+      salesOpenAt: openDate,
+      salesCloseAt: closeDate,
+      status: 'published',
+    }
+  ]).onConflictDoNothing();
 
   console.log('Seed complete.');
   process.exit(0);

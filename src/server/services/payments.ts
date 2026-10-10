@@ -76,8 +76,8 @@ export async function capturePayment(rzPaymentId: string, rzOrderId: string) {
   await db.transaction(async (tx) => {
     // Lock the row
     const [payment] = await tx.execute(
-      db.select().from(payments).where(eq(payments.razorpayOrderId, rzOrderId)).toSQL().sql + ' FOR UPDATE'
-    ).then((res) => res.rows as any[]);
+      require('drizzle-orm').sql`SELECT * FROM payments WHERE razorpay_order_id = ${rzOrderId} FOR UPDATE`
+    ).then((res: any) => res.rows);
 
     if (!payment) throw new Error('Payment not found');
     if (payment.status === 'captured') return;

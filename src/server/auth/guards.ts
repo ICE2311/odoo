@@ -59,8 +59,41 @@ export async function requireAdmin() {
   return caller;
 }
 
-export async function requireDoorAccess(_eventId: string) {
-  // Stub — full implementation in Phase 4
-  throw new Error('FORBIDDEN: Door access not yet implemented');
-}
+export async function requireDoorAccess(eventId: string) {
+  const caller = await getCaller();
+  if (caller.kind === 'visitor') throw new Error('UNAUTHORIZED');
 
+  if (caller.isAdmin) return caller; // Admins bypass the check
+
+  if (!caller.isMember) throw new Error('FORBIDDEN: Active membership required');
+
+  const now = new Date();
+  
+  // Need to import eventDoorStaff and events schemas to query
+  // Wait, I can use db.query...
+  const { eventDoorStaff, events } = await import('@/server/db/schema');
+  const { eq, and, isNull, lte, gt } = await import('drizzle-orm');
+
+  const row = await db.query.eventDoorStaff.findFirst({
+    where: and(
+      eq(eventDoorStaff.eventId, eventId),
+      eq(eventDoorStaff.userId, caller.user.id),
+      isNull(eventDoorStaff.revokedAt)
+    ),
+  });
+
+  if (!row) throw new Error('FORBIDDEN: Not assigned to door staff for this event');
+
+  const event = await db.query.events.findFirst({
+    where: eq(events.id, eventId),
+  });
+
+  if (!event) throw new Error('NOT FOUND: Event not found');
+
+  const windowStart = new Date(event.startsAt.getTime() - 2 * 60 * 60 * 1000);
+  if (now < windowStart || now > event.endsAt) {
+    throw new Error('FORBIDDEN: Outside of door access window');
+  }
+
+  return caller;
+}

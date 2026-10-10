@@ -100,15 +100,20 @@ export const memberships = pgTable('memberships', {
 // eventId references events table added in Phase 2
 export const eventDoorStaff = pgTable('event_door_staff', {
   id: uuid('id').primaryKey().defaultRandom(),
-  eventId: uuid('event_id').notNull(),
+  eventId: uuid('event_id').notNull().references(() => events.id),
   userId: uuid('user_id')
     .notNull()
     .references(() => users.id),
   grantedBy: uuid('granted_by')
     .notNull()
     .references(() => users.id),
+  grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow(),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => {
+  return {
+    uniqueStaff: uniqueIndex('unique_event_staff').on(t.eventId, t.userId),
+  };
 });
 
 // ─── Email Outbox ─────────────────────────────────────────────────────────────
@@ -188,5 +193,67 @@ export const webhookEvents = pgTable('webhook_events', {
   payloadJson: jsonb('payload_json').notNull(),
   processedAt: timestamp('processed_at', { withTimezone: true }),
   error: text('error'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Phase 3: Memberships ───────────────────────────────────────────────
+
+export const membershipReminders = pgTable('membership_reminders', {
+  membershipId: uuid('membership_id').notNull().references(() => memberships.id),
+  daysBefore: integer('days_before').notNull(),
+  sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => {
+  return {
+    uniqueReminder: uniqueIndex('unique_membership_reminder').on(t.membershipId, t.daysBefore),
+  };
+});
+
+// ─── Phase 4: Events & Tickets ───────────────────────────────────────────────
+
+export const events = pgTable('events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description').notNull(),
+  bannerUrl: text('banner_url'),
+  venue: text('venue').notNull(),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  capacity: integer('capacity').notNull(),
+  memberPricePaise: integer('member_price_paise').notNull(),
+  nonMemberPricePaise: integer('non_member_price_paise').notNull(),
+  salesOpenAt: timestamp('sales_open_at', { withTimezone: true }).notNull(),
+  salesCloseAt: timestamp('sales_close_at', { withTimezone: true }).notNull(),
+  maxTicketsPerUser: integer('max_tickets_per_user').notNull().default(4),
+  status: text('status', { enum: ['draft', 'published', 'cancelled', 'completed'] }).notNull().default('draft'),
+  seatsSold: integer('seats_sold').notNull().default(0),
+  seatsHeld: integer('seats_held').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const ticketOrders = pgTable('ticket_orders', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  eventId: uuid('event_id').notNull().references(() => events.id),
+  qty: integer('qty').notNull(),
+  totalPaise: integer('total_paise').notNull(),
+  status: text('status', { enum: ['pending', 'paid', 'cancelled', 'refunded'] }).notNull().default('pending'),
+  paymentId: uuid('payment_id').references(() => payments.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const tickets = pgTable('tickets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orderId: uuid('order_id').notNull().references(() => ticketOrders.id),
+  eventId: uuid('event_id').notNull().references(() => events.id),
+  ownerUserId: uuid('owner_user_id').notNull().references(() => users.id),
+  holderName: text('holder_name').notNull(),
+  priceType: text('price_type', { enum: ['member', 'non_member', 'comp'] }).notNull(),
+  pricePaise: integer('price_paise').notNull(),
+  code: text('code').notNull().unique(),
+  status: text('status', { enum: ['valid', 'refunded', 'void'] }).notNull().default('valid'),
+  checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
+  checkedInBy: uuid('checked_in_by').references(() => users.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

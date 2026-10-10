@@ -15,6 +15,20 @@
       "when": 1791617968637,
       "tag": "0001_pretty_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791620832976,
+      "tag": "0002_overconfident_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791622073057,
+      "tag": "0003_cynical_mandroid",
+      "breakpoints": true
     }
   ]
 }

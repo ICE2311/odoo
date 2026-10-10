@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/server/db';
-import { webhookEvents, payments } from '@/server/db/schema';
+import { webhookEvents, payments, refunds } from '@/server/db/schema';
 import { capturePayment, registry } from '@/server/services/payments';
 import { eq } from 'drizzle-orm';
 import '@/server/services/test_purchase'; // ensure registry is loaded
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   }
 
   const event = JSON.parse(body);
-  const eventId = event.payload?.payment?.entity?.id || event.event;
+  const eventId = event.payload?.payment?.entity?.id || event.payload?.refund?.entity?.id || event.event;
 
   try {
     const [existing] = await db.insert(webhookEvents).values({
@@ -49,6 +49,31 @@ export async function POST(req: Request) {
           await db.update(payments).set({ status: 'failed', failureReason: 'Webhook reported failure' }).where(eq(payments.id, payment.id));
           const handler = registry[payment.purpose];
           if (handler) await handler.onFailed({ tx: db, payment });
+        }
+      }
+    } else if (event.event === 'refund.processed') {
+      const rzRefundId = event.payload.refund.entity.id;
+      const rzPaymentId = event.payload.refund.entity.payment_id;
+      const [payment] = await db.select().from(payments).where(eq(payments.razorpayPaymentId, rzPaymentId));
+      if (payment) {
+        // If not already recorded synchronously
+        const [existingRefund] = await db.select().from(refunds).where(eq(refunds.razorpayRefundId, rzRefundId));
+        if (!existingRefund) {
+          const amountPaise = event.payload.refund.entity.amount;
+          const [refund] = await db.insert(refunds).values({
+            paymentId: payment.id,
+            amountPaise,
+            razorpayRefundId: rzRefundId,
+            reason: 'Webhook refund',
+            status: 'processed'
+          }).returning();
+          
+          const newStatus = amountPaise === payment.amountPaise ? 'refunded' : 'partially_refunded';
+          await db.update(payments).set({ status: newStatus }).where(eq(payments.id, payment.id));
+          const handler = registry[payment.purpose];
+          if (handler) {
+            await handler.onRefunded({ tx: db, payment: { ...payment, status: newStatus }, refund });
+          }
         }
       }
     }
