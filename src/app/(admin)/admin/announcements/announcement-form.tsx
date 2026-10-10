@@ -67,7 +67,9 @@ export function AnnouncementForm({ initialData }: AnnouncementFormProps) {
   );
   const [audience, setAudience] = useState<'public' | 'members'>(initialData?.audience || 'public');
   const [channelWeb, setChannelWeb] = useState(initialData?.channels.includes('web') ?? true);
-  const [channelEmail, setChannelEmail] = useState(initialData?.channels.includes('email') ?? false);
+  const [channelEmail, setChannelEmail] = useState(
+    initialData?.channels ? initialData.channels.includes('email') : true
+  );
   const [pinned, setPinned] = useState(initialData?.pinned ?? false);
   const [status, setStatus] = useState<'draft' | 'scheduled' | 'published' | 'archived'>(
     initialData?.status || 'published'

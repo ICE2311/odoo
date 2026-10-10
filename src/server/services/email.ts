@@ -3,8 +3,8 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import { db } from '@/server/db';
-import { emailOutbox } from '@/server/db/schema';
-import { eq, and, lte, asc } from 'drizzle-orm';
+import { emailOutbox, announcementDeliveries } from '@/server/db/schema';
+import { eq, and, lte, asc, sql } from 'drizzle-orm';
 
 // ─── Transporter ─────────────────────────────────────────────────────────────
 
@@ -168,6 +168,20 @@ export async function flushEmailOutbox(): Promise<{ sent: number; failed: number
           })
           .where(eq(emailOutbox.id, item.id));
 
+        if (item.kind === 'announcement' && item.refId) {
+          try {
+            await db
+              .update(announcementDeliveries)
+              .set({
+                sentCount: sql`${announcementDeliveries.sentCount} + 1`,
+                finishedAt: new Date(),
+              })
+              .where(eq(announcementDeliveries.announcementId, item.refId));
+          } catch {
+            // Non-fatal if announcement delivery row not present
+          }
+        }
+
         sent++;
       } catch (err: any) {
         const attempts = item.attempts + 1;
@@ -183,6 +197,19 @@ export async function flushEmailOutbox(): Promise<{ sent: number; failed: number
             lastError: err?.message || String(err),
           })
           .where(eq(emailOutbox.id, item.id));
+
+        if (item.kind === 'announcement' && item.refId && willFail) {
+          try {
+            await db
+              .update(announcementDeliveries)
+              .set({
+                failedCount: sql`${announcementDeliveries.failedCount} + 1`,
+              })
+              .where(eq(announcementDeliveries.announcementId, item.refId));
+          } catch {
+            // Non-fatal
+          }
+        }
 
         failed++;
       }

@@ -1,37 +1,72 @@
-'use client'
+'use client';
 
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Mail, CheckCircle2, Lock } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const errorParam = searchParams.get('error');
+  const verifyParam = searchParams.get('verify');
+
   const [mode, setMode] = useState<'password' | 'magic'>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
+  useEffect(() => {
+    if (errorParam) {
+      setStatus('error');
+      if (errorParam === 'Configuration') {
+        setErrorMsg('Authentication configuration error. Please check server environment settings.');
+      } else if (errorParam === 'AccessDenied') {
+        setErrorMsg('Access denied.');
+      } else if (errorParam === 'Verification') {
+        setErrorMsg('This sign-in link has expired or was already used. Please request a new one.');
+      } else if (errorParam === 'EmailSignin') {
+        setErrorMsg('Failed to send verification email. Please check your email address or SMTP setup.');
+      } else {
+        setErrorMsg(`Authentication error: ${errorParam}`);
+      }
+    } else if (verifyParam === '1') {
+      setStatus('success');
+      setMode('magic');
+    }
+  }, [errorParam, verifyParam]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
     setErrorMsg('');
-    
+
     if (mode === 'magic') {
-      const result = await signIn('nodemailer', { email, redirect: false });
-      if (result?.error) {
+      try {
+        const result = await signIn('nodemailer', { email, redirect: false });
+        if (result?.error) {
+          setStatus('error');
+          setErrorMsg('Failed to send magic link. Please check your email and try again.');
+        } else {
+          setStatus('success');
+        }
+      } catch (err: any) {
         setStatus('error');
-        setErrorMsg('Failed to send magic link. Please try again.');
-      } else {
-        setStatus('success');
+        setErrorMsg(err?.message || 'Failed to send magic link. Please try again.');
       }
     } else {
-      const result = await signIn('credentials', { email, password, callbackUrl: '/account', redirect: false });
-      if (result?.error) {
+      try {
+        const result = await signIn('credentials', { email, password, callbackUrl: '/account', redirect: false });
+        if (result?.error) {
+          setStatus('error');
+          setErrorMsg('Invalid email or password.');
+        } else if (result?.url) {
+          window.location.href = result.url;
+        }
+      } catch (err: any) {
         setStatus('error');
-        setErrorMsg('Invalid email or password.');
-      } else if (result?.url) {
-        window.location.href = result.url;
+        setErrorMsg(err?.message || 'Login failed.');
       }
     }
   };
@@ -43,8 +78,12 @@ export default function LoginPage() {
           <CheckCircle2 className="w-8 h-8" />
         </div>
         <h1 className="text-2xl font-bold">Check your email</h1>
-        <p className="text-muted-foreground">A magic link has been sent to <strong>{email}</strong>. Click the link in the email to sign in securely.</p>
-        <button onClick={() => setStatus('idle')} className="text-primary font-medium hover:underline">Use a different email</button>
+        <p className="text-muted-foreground">
+          A magic link has been sent to <strong>{email || 'your email'}</strong>. Click the link in the email to sign in securely.
+        </p>
+        <button onClick={() => setStatus('idle')} className="text-primary font-medium hover:underline">
+          Use a different email
+        </button>
       </div>
     );
   }
@@ -64,17 +103,21 @@ export default function LoginPage() {
         )}
 
         <div className="flex bg-muted p-1 rounded-[var(--radius-md)]">
-          <button 
+          <button
             type="button"
-            onClick={() => { setMode('password'); setStatus('idle'); }} 
-            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${mode === 'password' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+            onClick={() => { setMode('password'); setStatus('idle'); }}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${
+              mode === 'password' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'
+            }`}
           >
             Password
           </button>
-          <button 
+          <button
             type="button"
-            onClick={() => { setMode('magic'); setStatus('idle'); }} 
-            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${mode === 'magic' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+            onClick={() => { setMode('magic'); setStatus('idle'); }}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-[calc(var(--radius-md)-4px)] transition-colors ${
+              mode === 'magic' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'
+            }`}
           >
             Magic Link
           </button>
@@ -154,9 +197,17 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account? <Link href="/register" className="font-medium text-primary hover:underline">Register here</Link>
+          Don&apos;t have an account? <Link href="/register" className="font-medium text-primary hover:underline">Register here</Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="max-w-md mx-auto mt-24 text-center text-muted-foreground text-sm">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

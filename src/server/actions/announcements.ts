@@ -10,8 +10,8 @@ import {
   auditLog,
 } from '@/server/db/schema';
 import { requireAdmin } from '@/server/auth/guards';
-import { eq, and, lte, gt, inArray } from 'drizzle-orm';
-import { enqueueEmail } from '@/server/services/email';
+import { eq, and, lte, gt, inArray, or, isNull } from 'drizzle-orm';
+import { enqueueEmail, flushEmailOutbox } from '@/server/services/email';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
@@ -73,7 +73,7 @@ export async function createAnnouncementAction(formData: {
   const isPublished = validData.status === 'published';
   const scheduledDate = validData.scheduledFor ? new Date(validData.scheduledFor) : null;
 
-  return await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(announcements)
       .values({
@@ -99,7 +99,7 @@ export async function createAnnouncementAction(formData: {
         recipientUsers = await tx
           .select({ email: users.email, name: users.name })
           .from(users)
-          .where(eq(users.emailOptIn, true));
+          .where(or(eq(users.emailOptIn, true), isNull(users.emailOptIn)));
       } else {
         // Members only: active members with emailOptIn
         recipientUsers = await tx
@@ -108,7 +108,7 @@ export async function createAnnouncementAction(formData: {
           .innerJoin(memberships, eq(users.id, memberships.userId))
           .where(
             and(
-              eq(users.emailOptIn, true),
+              or(eq(users.emailOptIn, true), isNull(users.emailOptIn)),
               eq(memberships.status, 'active'),
               lte(memberships.startsAt, now),
               gt(memberships.endsAt, now)
@@ -123,6 +123,8 @@ export async function createAnnouncementAction(formData: {
         seen.add(u.email);
         return true;
       });
+
+      console.log(`[ANNOUNCEMENT] Audience=${validData.audience}, Found ${uniqueRecipients.length} recipient(s) for "${created.title}"`);
 
       if (uniqueRecipients.length > 0) {
         // Record delivery row
@@ -185,6 +187,13 @@ export async function createAnnouncementAction(formData: {
     revalidatePath('/');
     return { success: true, announcement: created };
   });
+
+  // Flush outbox outside the transaction so emails are immediately dispatched
+  flushEmailOutbox().catch((err) => {
+    console.error('[ANNOUNCEMENT FLUSH ERROR]', err?.message || err);
+  });
+
+  return result;
 }
 
 export async function updateAnnouncementAction(
@@ -225,7 +234,7 @@ export async function updateAnnouncementAction(
   const contentChanged =
     existing.title !== validData.title || existing.bodyMarkdown !== validData.bodyMarkdown;
 
-  return await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     // If already published and content changed, record a revision
     if (wasPublished && contentChanged) {
       await tx.insert(announcementRevisions).values({
@@ -269,7 +278,7 @@ export async function updateAnnouncementAction(
           recipientUsers = await tx
             .select({ email: users.email, name: users.name })
             .from(users)
-            .where(eq(users.emailOptIn, true));
+            .where(or(eq(users.emailOptIn, true), isNull(users.emailOptIn)));
         } else {
           recipientUsers = await tx
             .select({ email: users.email, name: users.name })
@@ -277,7 +286,7 @@ export async function updateAnnouncementAction(
             .innerJoin(memberships, eq(users.id, memberships.userId))
             .where(
               and(
-                eq(users.emailOptIn, true),
+                or(eq(users.emailOptIn, true), isNull(users.emailOptIn)),
                 eq(memberships.status, 'active'),
                 lte(memberships.startsAt, now),
                 gt(memberships.endsAt, now)
@@ -291,6 +300,8 @@ export async function updateAnnouncementAction(
           seen.add(u.email);
           return true;
         });
+
+        console.log(`[ANNOUNCEMENT UPDATE] Audience=${validData.audience}, Found ${uniqueRecipients.length} recipient(s) for "${updated.title}"`);
 
         if (uniqueRecipients.length > 0) {
           await tx.insert(announcementDeliveries).values({
@@ -354,6 +365,13 @@ export async function updateAnnouncementAction(
     revalidatePath('/');
     return { success: true, announcement: updated };
   });
+
+  // Flush outbox outside the transaction so emails are immediately dispatched
+  flushEmailOutbox().catch((err) => {
+    console.error('[ANNOUNCEMENT FLUSH ERROR]', err?.message || err);
+  });
+
+  return result;
 }
 
 export async function deleteAnnouncementAction(id: string) {
@@ -422,4 +440,122 @@ export async function togglePinAnnouncementAction(id: string) {
   revalidatePath('/announcements');
   return { success: true, pinned: newPinned };
 }
+
+export async function broadcastAnnouncementAction(id: string) {
+  const caller = await requireAdmin();
+
+  const [announcement] = await db
+    .select()
+    .from(announcements)
+    .where(eq(announcements.id, id));
+
+  if (!announcement) {
+    throw new Error('Announcement not found');
+  }
+
+  const now = new Date();
+  let recipientUsers: Array<{ email: string; name: string | null }> = [];
+
+  if (announcement.audience === 'public') {
+    recipientUsers = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(or(eq(users.emailOptIn, true), isNull(users.emailOptIn)));
+  } else {
+    recipientUsers = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .innerJoin(memberships, eq(users.id, memberships.userId))
+      .where(
+        and(
+          or(eq(users.emailOptIn, true), isNull(users.emailOptIn)),
+          eq(memberships.status, 'active'),
+          lte(memberships.startsAt, now),
+          gt(memberships.endsAt, now)
+        )
+      );
+  }
+
+  const seen = new Set<string>();
+  const uniqueRecipients = recipientUsers.filter((u) => {
+    if (!u.email || seen.has(u.email)) return false;
+    seen.add(u.email);
+    return true;
+  });
+
+  if (uniqueRecipients.length === 0) {
+    return { success: true, count: 0, message: 'No eligible recipients found.' };
+  }
+
+  // Create or update delivery record
+  const existingDelivery = await db.query.announcementDeliveries.findFirst({
+    where: eq(announcementDeliveries.announcementId, id),
+  });
+
+  if (existingDelivery) {
+    await db
+      .update(announcementDeliveries)
+      .set({
+        recipientsCount: uniqueRecipients.length,
+        sentCount: 0,
+        failedCount: 0,
+        startedAt: now,
+        finishedAt: null,
+      })
+      .where(eq(announcementDeliveries.announcementId, id));
+  } else {
+    await db.insert(announcementDeliveries).values({
+      announcementId: id,
+      recipientsCount: uniqueRecipients.length,
+      sentCount: 0,
+      failedCount: 0,
+      startedAt: now,
+    });
+  }
+
+  // Enqueue emails
+  for (const recipient of uniqueRecipients) {
+    await enqueueEmail({
+      toEmail: recipient.email,
+      subject: `[Skyline Announcement] ${announcement.title}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #1e293b;">
+          <h2 style="color: #0f172a; margin-bottom: 8px;">${announcement.title}</h2>
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 20px;">
+            Category: <strong>${announcement.category.toUpperCase()}</strong> • Published by Skyline Student Association
+          </div>
+          <div style="padding: 16px; background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 4px; white-space: pre-wrap;">
+            ${announcement.bodyMarkdown}
+          </div>
+          <p style="margin-top: 24px; font-size: 13px; color: #64748b;">
+            You are receiving this because you subscribed to Skyline announcements. Manage your preferences on your profile.
+          </p>
+        </div>
+      `,
+      text: `${announcement.title}\n\n${announcement.bodyMarkdown}`,
+      kind: 'announcement',
+      refType: 'announcement',
+      refId: announcement.id,
+    });
+  }
+
+  // Flush outbox immediately
+  const flushResult = await flushEmailOutbox();
+
+  revalidatePath('/admin/announcements');
+  revalidatePath(`/admin/announcements/${id}`);
+
+  return {
+    success: true,
+    count: uniqueRecipients.length,
+    sent: flushResult.sent,
+    message: `Dispatched ${flushResult.sent} of ${uniqueRecipients.length} emails.`,
+  };
+}
+
+export async function triggerFlushEmailOutboxAction() {
+  await requireAdmin();
+  return await flushEmailOutbox();
+}
+
 
