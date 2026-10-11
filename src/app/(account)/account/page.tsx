@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { getCaller } from '@/server/auth/guards';
 import { PageHeader } from '@/components/page-header';
-import { Ticket, ShoppingBag, Heart, User, Receipt } from 'lucide-react';
+import { Ticket, ShoppingBag, Heart, User, Receipt, Shield, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AccountPage() {
@@ -11,7 +11,7 @@ export default async function AccountPage() {
     return null;
   }
 
-  const isMemberOrAdmin = caller.isMember || caller.isAdmin;
+  const isMemberOrAdmin = caller.isMember || caller.isAdmin || caller.isTreasurer;
 
   const sections = [
     {
@@ -44,6 +44,27 @@ export default async function AccountPage() {
             icon: Receipt,
             href: '/account/expenses',
             color: 'bg-amber-500/10 text-amber-600',
+          },
+        ]
+      : []),
+    ...(caller.isAdmin
+      ? [
+          {
+            title: 'Admin Console',
+            description: 'Manage users, events & club',
+            icon: Shield,
+            href: '/admin',
+            color: 'bg-primary/10 text-primary',
+          },
+        ]
+      : caller.isTreasurer
+      ? [
+          {
+            title: 'Treasury Portal',
+            description: 'Finance, ledger & semester reports',
+            icon: Wallet,
+            href: '/admin/finance',
+            color: 'bg-emerald-500/10 text-emerald-600',
           },
         ]
       : []),

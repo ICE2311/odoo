@@ -17,6 +17,7 @@ import {
   Sparkles,
   Award,
   Trash2,
+  Wallet,
 } from 'lucide-react';
 import {
   updateUserDetails,
@@ -33,7 +34,7 @@ interface UserRecord {
   phone: string | null;
   studentId: string | null;
   college: string | null;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'treasurer';
   emailOptIn: boolean;
   createdAt: Date;
   activeMembership: {
@@ -65,7 +66,7 @@ export function UsersClient({
 }) {
   const [usersList, setUsersList] = useState<UserRecord[]>(initialUsers);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'admin' | 'member' | 'non-member' | 'door-staff'>('all');
+  const [filter, setFilter] = useState<'all' | 'admin' | 'treasurer' | 'member' | 'non-member' | 'door-staff'>('all');
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
 
   // Modal form state
@@ -74,7 +75,7 @@ export function UsersClient({
   const [formPhone, setFormPhone] = useState('');
   const [formStudentId, setFormStudentId] = useState('');
   const [formCollege, setFormCollege] = useState('');
-  const [formRole, setFormRole] = useState<'user' | 'admin'>('user');
+  const [formRole, setFormRole] = useState<'user' | 'admin' | 'treasurer'>('user');
   const [formEmailOptIn, setFormEmailOptIn] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState('');
 
@@ -309,8 +310,9 @@ export function UsersClient({
     if (!matchesSearch) return false;
 
     if (filter === 'admin') return u.role === 'admin';
+    if (filter === 'treasurer') return u.role === 'treasurer';
     if (filter === 'member') return !!u.activeMembership;
-    if (filter === 'non-member') return !u.activeMembership && u.role !== 'admin';
+    if (filter === 'non-member') return !u.activeMembership && u.role !== 'admin' && u.role !== 'treasurer';
     if (filter === 'door-staff') return u.doorAssignments.length > 0;
     return true;
   });
@@ -349,6 +351,16 @@ export function UsersClient({
             }`}
           >
             Admins ({usersList.filter((u) => u.role === 'admin').length})
+          </button>
+          <button
+            onClick={() => setFilter('treasurer')}
+            className={`px-3 py-1.5 rounded-[var(--radius-md)] transition-colors whitespace-nowrap ${
+              filter === 'treasurer'
+                ? 'bg-card text-emerald-600 font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Treasurers ({usersList.filter((u) => u.role === 'treasurer').length})
           </button>
           <button
             onClick={() => setFilter('member')}
@@ -413,6 +425,11 @@ export function UsersClient({
                               <Shield className="w-3.5 h-3.5 text-primary" />
                             </span>
                           )}
+                          {user.role === 'treasurer' && (
+                            <span title="Treasurer">
+                              <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">{user.email}</div>
                       </div>
@@ -433,12 +450,15 @@ export function UsersClient({
                   <td className="px-6 py-4 space-y-1">
                     <div className="flex items-center gap-1.5">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-[var(--radius-md)] text-xs font-semibold uppercase tracking-wider ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-md)] text-xs font-semibold uppercase tracking-wider ${
                           user.role === 'admin'
                             ? 'bg-primary/10 text-primary border border-primary/20'
+                            : user.role === 'treasurer'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
                             : 'bg-muted text-foreground'
                         }`}
                       >
+                        {user.role === 'treasurer' && <Wallet className="w-3 h-3" />}
                         {user.role}
                       </span>
 
@@ -629,10 +649,10 @@ export function UsersClient({
                   <label className="block text-xs font-semibold text-foreground mb-1">
                     System Role
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <label
                       className={`flex items-center gap-2 p-2.5 border rounded-[var(--radius-md)] cursor-pointer text-xs ${
-                        formRole === 'user' ? 'border-primary bg-primary/5 font-semibold' : 'bg-muted'
+                        formRole === 'user' ? 'border-primary bg-primary/5 font-semibold text-foreground' : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       <input
@@ -648,7 +668,25 @@ export function UsersClient({
 
                     <label
                       className={`flex items-center gap-2 p-2.5 border rounded-[var(--radius-md)] cursor-pointer text-xs ${
-                        formRole === 'admin' ? 'border-primary bg-primary/5 font-semibold' : 'bg-muted'
+                        formRole === 'treasurer' ? 'border-emerald-500 bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300' : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="userRole"
+                        value="treasurer"
+                        checked={formRole === 'treasurer'}
+                        onChange={() => setFormRole('treasurer')}
+                        className="text-emerald-600"
+                      />
+                      <span className="flex items-center gap-1">
+                        <Wallet className="w-3.5 h-3.5 text-emerald-600" /> Treasurer
+                      </span>
+                    </label>
+
+                    <label
+                      className={`flex items-center gap-2 p-2.5 border rounded-[var(--radius-md)] cursor-pointer text-xs ${
+                        formRole === 'admin' ? 'border-primary bg-primary/5 font-semibold text-primary' : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       <input
@@ -659,7 +697,7 @@ export function UsersClient({
                         onChange={() => setFormRole('admin')}
                         className="text-primary"
                       />
-                      <span className="flex items-center gap-1 text-primary">
+                      <span className="flex items-center gap-1">
                         <Shield className="w-3.5 h-3.5" /> Administrator
                       </span>
                     </label>

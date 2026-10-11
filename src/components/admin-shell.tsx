@@ -47,56 +47,62 @@ export function AdminShell({ user, children }: AdminShellProps) {
     return pathname.startsWith(href);
   };
 
-  const navSections = [
-    {
-      title: 'Overview',
-      items: [
-        { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true, color: 'text-primary' },
-        { href: '/admin/users', label: 'Users & Members', icon: Users, exact: false, color: 'text-secondary' },
-      ],
-    },
-    {
-      title: 'Communications',
-      items: [
-        { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, exact: false, color: 'text-amber-500' },
-      ],
-    },
-    {
-      title: 'Events & Door Staff',
-      items: [
-        { href: '/admin/events', label: 'Event Catalog', icon: Calendar, exact: true, color: 'text-indigo-500' },
-        { href: '/admin/events/check-in', label: 'Door Check-In', icon: QrCode, exact: false, color: 'text-emerald-600' },
-      ],
-    },
-    {
-      title: 'Merch & Orders',
-      items: [
-        { href: '/admin/shop', label: 'Products & Stock', icon: ShoppingBag, exact: false, color: 'text-accent' },
-        { href: '/admin/orders', label: 'Merch Orders', icon: Package, exact: false, color: 'text-sky-500' },
-      ],
-    },
-    {
-      title: 'Volunteers & Tasks',
-      items: [
-        { href: '/admin/fundraisers', label: 'Fundraisers', icon: HeartHandshake, exact: false, color: 'text-rose-500' },
-        { href: '/admin/expenses', label: 'Expense Claims', icon: Receipt, exact: false, color: 'text-amber-500' },
-      ],
-    },
-    {
-      title: 'Treasury & Reports',
-      items: [
-        { href: '/admin/finance', label: 'Finance & Ledger', icon: Wallet, exact: true, color: 'text-emerald-600' },
-        { href: '/admin/finance/reports', label: 'Semester Reports', icon: BarChart3, exact: false, color: 'text-primary' },
-      ],
-    },
-    {
-      title: 'Governance',
-      items: [
-        { href: '/admin/audit-log', label: 'Audit Log', icon: ShieldAlert, exact: false, color: 'text-slate-500' },
-        { href: '/admin/settings', label: 'Settings', icon: Settings, exact: false, color: 'text-slate-500' },
-      ],
-    },
-  ];
+  const isTreasurer = user.role === 'treasurer';
+
+  const navSections = isTreasurer
+    ? [
+        {
+          title: 'Treasury & Finance',
+          items: [
+            { href: '/admin/finance', label: 'Finance & Ledger', icon: Wallet, exact: true, color: 'text-emerald-600' },
+            { href: '/admin/finance/reports', label: 'Semester Reports', icon: BarChart3, exact: false, color: 'text-primary' },
+            { href: '/admin/expenses', label: 'Expense Claims', icon: Receipt, exact: false, color: 'text-amber-500' },
+          ],
+        },
+      ]
+    : [
+        {
+          title: 'Overview',
+          items: [
+            { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true, color: 'text-primary' },
+            { href: '/admin/users', label: 'Users & Members', icon: Users, exact: false, color: 'text-secondary' },
+          ],
+        },
+        {
+          title: 'Communications',
+          items: [
+            { href: '/admin/announcements', label: 'Announcements', icon: Megaphone, exact: false, color: 'text-amber-500' },
+          ],
+        },
+        {
+          title: 'Events & Door Staff',
+          items: [
+            { href: '/admin/events', label: 'Event Catalog', icon: Calendar, exact: true, color: 'text-indigo-500' },
+            { href: '/admin/events/check-in', label: 'Door Check-In', icon: QrCode, exact: false, color: 'text-emerald-600' },
+          ],
+        },
+        {
+          title: 'Merch & Orders',
+          items: [
+            { href: '/admin/shop', label: 'Products & Stock', icon: ShoppingBag, exact: false, color: 'text-accent' },
+            { href: '/admin/orders', label: 'Merch Orders', icon: Package, exact: false, color: 'text-sky-500' },
+          ],
+        },
+        {
+          title: 'Volunteers & Tasks',
+          items: [
+            { href: '/admin/fundraisers', label: 'Fundraisers', icon: HeartHandshake, exact: false, color: 'text-rose-500' },
+            { href: '/admin/expenses', label: 'Expense Claims', icon: Receipt, exact: false, color: 'text-amber-500' },
+          ],
+        },
+        {
+          title: 'Treasury & Reports',
+          items: [
+            { href: '/admin/finance', label: 'Finance & Ledger', icon: Wallet, exact: true, color: 'text-emerald-600' },
+            { href: '/admin/finance/reports', label: 'Semester Reports', icon: BarChart3, exact: false, color: 'text-primary' },
+          ],
+        },
+      ];
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -104,16 +110,16 @@ export function AdminShell({ user, children }: AdminShellProps) {
       <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col shrink-0">
         {/* Brand Header */}
         <div className="h-16 flex items-center px-6 border-b border-border justify-between">
-          <Link href="/admin" className="flex items-center gap-2.5">
+          <Link href={isTreasurer ? "/admin/finance" : "/admin"} className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm">
-              S
+              {isTreasurer ? 'T' : 'S'}
             </div>
             <div>
               <span className="font-bold text-foreground text-sm tracking-tight block leading-tight">
-                Skyline Console
+                {isTreasurer ? 'Skyline Treasury' : 'Skyline Console'}
               </span>
               <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground block">
-                Club Administration
+                {isTreasurer ? 'Treasurer Portal' : 'Club Administration'}
               </span>
             </div>
           </Link>
@@ -152,7 +158,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
         <div className="p-3 border-t border-border bg-card space-y-1">
           <div className="px-3 py-1.5 flex items-center justify-between text-xs text-muted-foreground">
             <span className="truncate font-semibold text-foreground max-w-[130px]">{user.name || user.email}</span>
-            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary">Admin</span>
+            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+              {isTreasurer ? 'Treasurer' : 'Admin'}
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-1 pt-1">
@@ -196,22 +204,24 @@ export function AdminShell({ user, children }: AdminShellProps) {
               {mobileDrawerOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            <Link href="/admin" className="md:hidden font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Link href={isTreasurer ? "/admin/finance" : "/admin"} className="md:hidden font-bold tracking-tight text-foreground flex items-center gap-2">
               <span className="w-7 h-7 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-xs">
-                S
+                {isTreasurer ? 'T' : 'S'}
               </span>
-              <span className="text-sm font-extrabold">Console</span>
+              <span className="text-sm font-extrabold">{isTreasurer ? 'Treasury' : 'Console'}</span>
             </Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/admin/events/check-in"
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold transition-colors border border-emerald-200"
-            >
-              <QrCode className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Check-In</span>
-            </Link>
+            {!isTreasurer && (
+              <Link
+                href="/admin/events/check-in"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold transition-colors border border-emerald-200"
+              >
+                <QrCode className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="hidden sm:inline">Check-In</span>
+              </Link>
+            )}
             <Link
               href="/admin/finance"
               className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold transition-colors"
@@ -235,58 +245,107 @@ export function AdminShell({ user, children }: AdminShellProps) {
       {/* ─── MOBILE BOTTOM BAR ─── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-md z-40 safe-area-bottom">
         <div className="flex justify-around items-center px-1 py-2">
-          <Link 
-            href="/admin" 
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
-              isExactActive('/admin') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">Overview</span>
-          </Link>
+          {isTreasurer ? (
+            <>
+              <Link 
+                href="/admin/finance" 
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors ${
+                  isExactActive('/admin/finance') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Wallet className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Finance</span>
+              </Link>
 
-          <Link 
-            href="/admin/users" 
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
-              isPrefixActive('/admin/users') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Users className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">Users</span>
-          </Link>
+              <Link 
+                href="/admin/finance/reports" 
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors ${
+                  isPrefixActive('/admin/finance/reports') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Reports</span>
+              </Link>
 
-          <Link 
-            href="/admin/events" 
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
-              isPrefixActive('/admin/events') && !pathname.includes('check-in') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Calendar className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">Events</span>
-          </Link>
+              <Link 
+                href="/admin/expenses" 
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors ${
+                  isPrefixActive('/admin/expenses') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Receipt className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Expenses</span>
+              </Link>
 
-          <Link 
-            href="/admin/finance" 
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
-              isPrefixActive('/admin/finance') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Wallet className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">Finance</span>
-          </Link>
+              {/* More trigger */}
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(true)}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors ${
+                  mobileDrawerOpen ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-label="Open full admin menu"
+              >
+                <Menu className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Menu</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link 
+                href="/admin" 
+                className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
+                  isExactActive('/admin') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Overview</span>
+              </Link>
 
-          {/* More trigger */}
-          <button
-            type="button"
-            onClick={() => setMobileDrawerOpen(true)}
-            className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
-              mobileDrawerOpen ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
-            }`}
-            aria-label="Open full admin menu"
-          >
-            <Menu className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">More</span>
-          </button>
+              <Link 
+                href="/admin/users" 
+                className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
+                  isPrefixActive('/admin/users') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Users</span>
+              </Link>
+
+              <Link 
+                href="/admin/events" 
+                className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
+                  isPrefixActive('/admin/events') && !pathname.includes('check-in') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Events</span>
+              </Link>
+
+              <Link 
+                href="/admin/finance" 
+                className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
+                  isPrefixActive('/admin/finance') ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Wallet className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">Finance</span>
+              </Link>
+
+              {/* More trigger */}
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(true)}
+                className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-colors ${
+                  mobileDrawerOpen ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                aria-label="Open full admin menu"
+              >
+                <Menu className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">More</span>
+              </button>
+            </>
+          )}
         </div>
       </nav>
 

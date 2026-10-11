@@ -1,23 +1,19 @@
 import { requireAdmin } from '@/server/auth/guards';
 import { getFundraiserBoard } from '@/server/data/fundraisers';
-import FundraiserBoardClient from '@/app/(public)/volunteer/fundraisers/[id]/FundraiserBoardClient';
-import AdminFundraiserExtras from './AdminFundraiserExtras';
+import AdminFundraiserClient from './AdminFundraiserClient';
 
-export default async function AdminFundraiserPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminFundraiserPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const caller = await requireAdmin();
-  const data = await getFundraiserBoard((await params).id);
+  const { id } = await params;
+  const data = await getFundraiserBoard(id);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-8">
-      <div className="flex gap-4">
-        <div className="w-2/3">
-          <FundraiserBoardClient data={data} currentUser={caller.user} />
-        </div>
-        <div className="w-1/3">
-          <AdminFundraiserExtras fundraiser={data.fundraiser} volunteers={data.volunteers} tasks={data.tasks} />
-        </div>
-      </div>
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+      <AdminFundraiserClient data={data} currentUser={caller.user} />
     </div>
   );
 }
-

@@ -1,10 +1,10 @@
-import { requireAdmin } from '@/server/auth/guards';
+import { requireFinanceAccess } from '@/server/auth/guards';
 import { db } from '@/server/db';
 import { ledgerEntries, users } from '@/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 
 export async function GET(req: Request) {
-  await requireAdmin();
+  await requireFinanceAccess();
   
   const entries = await db.select({
     id: ledgerEntries.id,

@@ -113,6 +113,25 @@ export async function getFundraiserBoard(id: string) {
     }));
   }
 
+  let takings: any[] = [];
+  if (caller.isAdmin) {
+    const tRes = await db.execute(sql`
+      SELECT t.id, t.amount_paise, t.method, t.note, t.recorded_at, u.name as recorded_by_name
+      FROM fundraiser_takings t
+      LEFT JOIN users u ON t.recorded_by = u.id
+      WHERE t.fundraiser_id = ${id}
+      ORDER BY t.recorded_at DESC
+    `);
+    takings = tRes.rows.map((r: any) => ({
+      id: r.id,
+      amountPaise: Number(r.amount_paise),
+      method: r.method,
+      note: r.note,
+      recordedAt: new Date(r.recorded_at),
+      recordedByName: r.recorded_by_name,
+    }));
+  }
+
   return {
     fundraiser: {
       ...f,
@@ -125,7 +144,8 @@ export async function getFundraiserBoard(id: string) {
       daysLeft: Math.floor((f.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     },
     tasks: taskList,
-    volunteers
+    volunteers,
+    takings,
   };
 }
 

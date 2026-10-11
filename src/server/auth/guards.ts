@@ -33,6 +33,7 @@ export const getCaller = cache(async () => {
     kind: 'user' as const,
     user,
     isAdmin: user.role === 'admin',
+    isTreasurer: user.role === 'treasurer',
     isMember: !!activeMembership,
   };
 });
@@ -56,6 +57,14 @@ export async function requireMember() {
 export async function requireAdmin() {
   const caller = await requireUser();
   if (!caller.isAdmin) throw new Error('FORBIDDEN: Admin access required');
+  return caller;
+}
+
+export async function requireFinanceAccess() {
+  const caller = await requireUser();
+  if (!caller.isAdmin && !caller.isTreasurer) {
+    throw new Error('FORBIDDEN: Admin or Treasurer access required');
+  }
   return caller;
 }
 

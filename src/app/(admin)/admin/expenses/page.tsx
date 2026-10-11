@@ -1,10 +1,10 @@
 import { getAdminExpenseClaims } from '@/server/data/admin/expenses';
-import { requireAdmin, getCaller } from '@/server/auth/guards';
+import { requireFinanceAccess, getCaller } from '@/server/auth/guards';
 import { PageHeader } from '@/components/page-header';
 import { AdminExpensesClient, AdminExpenseClaimItem } from './admin-expenses-client';
 
 export default async function AdminExpensesPage() {
-  await requireAdmin();
+  await requireFinanceAccess();
   const caller = await getCaller();
   const currentUserId = caller.kind === 'user' ? caller.user.id : null;
 

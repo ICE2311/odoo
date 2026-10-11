@@ -1,7 +1,14 @@
 import { getOverviewDashboardData } from '@/server/data/admin/finance';
+import { getCaller } from '@/server/auth/guards';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
+  const caller = await getCaller();
+  if (caller.kind === 'user' && caller.user.role === 'treasurer') {
+    redirect('/admin/finance');
+  }
+
   const data = await getOverviewDashboardData();
 
   return (

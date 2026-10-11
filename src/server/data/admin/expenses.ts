@@ -1,10 +1,10 @@
 import { db } from '@/server/db';
 import { expenseClaims, users, events, fundraisers } from '@/server/db/schema';
-import { requireAdmin } from '@/server/auth/guards';
+import { requireFinanceAccess } from '@/server/auth/guards';
 import { desc, eq, getTableColumns, sql } from 'drizzle-orm';
 
 export async function getAdminExpenseClaims() {
-  await requireAdmin();
+  await requireFinanceAccess();
   const claims = await db.select({
     ...getTableColumns(expenseClaims),
     claimantName: users.name,

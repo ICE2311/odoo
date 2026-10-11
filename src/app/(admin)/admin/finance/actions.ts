@@ -1,6 +1,6 @@
 'use server';
 
-import { requireUser, requireAdmin } from '@/server/auth/guards';
+import { requireUser, requireAdmin, requireFinanceAccess } from '@/server/auth/guards';
 import { db } from '@/server/db';
 import { ledgerEntries } from '@/server/db/schema';
 import { recordEntry } from '@/server/services/ledger';
@@ -11,8 +11,8 @@ import { reconcile } from '@/server/data/admin/finance';
 
 export async function addManualEntry(formData: FormData) {
   const caller = await requireUser();
-  if (!caller.isAdmin && !caller.isMember) {
-    throw new Error('FORBIDDEN: Admin or Active Member privileges required to record ledger entries');
+  if (!caller.isAdmin && !caller.isTreasurer && !caller.isMember) {
+    throw new Error('FORBIDDEN: Admin, Treasurer, or Active Member privileges required to record ledger entries');
   }
 
   const direction = (formData.get('direction') as 'in' | 'out') || 'in';
@@ -52,7 +52,7 @@ export async function addManualEntry(formData: FormData) {
 }
 
 export async function reverseEntry(id: string) {
-  const caller = await requireAdmin();
+  const caller = await requireFinanceAccess();
 
   const entry = await db.query.ledgerEntries.findFirst({
     where: eq(ledgerEntries.id, id),
@@ -77,7 +77,7 @@ export async function reverseEntry(id: string) {
 }
 
 export async function runReconciliation() {
-  await requireAdmin();
+  await requireFinanceAccess();
   const mismatches = await reconcile();
   return mismatches;
 }

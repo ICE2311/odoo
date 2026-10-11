@@ -205,7 +205,7 @@ export default function FundraiserBoardClient({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className="text-center px-3 py-1.5 bg-muted rounded-[var(--radius-md)] border">
               <div className="text-xs font-bold text-foreground">
                 {tasksDoneCount}/{tasksList.length}

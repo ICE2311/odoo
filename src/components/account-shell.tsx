@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, ShoppingBag, Ticket, User, LogOut, 
   HeartHandshake, QrCode, Shield, ShoppingCart, Receipt, 
-  Menu, X, Sparkles, ChevronRight, PlusCircle, ArrowUpRight
+  Menu, X, Sparkles, ChevronRight, PlusCircle, ArrowUpRight, Wallet
 } from 'lucide-react';
 
 interface AccountShellProps {
@@ -17,11 +17,12 @@ interface AccountShellProps {
     role: string;
   };
   isAdmin: boolean;
+  isTreasurer?: boolean;
   isMember: boolean;
   children: React.ReactNode;
 }
 
-export function AccountShell({ user, isAdmin, isMember, children }: AccountShellProps) {
+export function AccountShell({ user, isAdmin, isTreasurer, isMember, children }: AccountShellProps) {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const pathname = usePathname();
 
@@ -73,7 +74,7 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                   Skyline SSA
                 </span>
                 <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">
-                  {isAdmin ? 'Admin & Member Portal' : 'Member Portal'}
+                  {isAdmin ? 'Admin & Member Portal' : isTreasurer ? 'Treasurer Portal' : 'Member Portal'}
                 </span>
               </div>
             </Link>
@@ -89,7 +90,7 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
               <ShoppingCart className="w-4 h-4" />
             </Link>
 
-            {isAdmin && (
+            {isAdmin ? (
               <Link
                 href="/admin"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-colors"
@@ -97,7 +98,15 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                 <Shield className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Admin Console</span>
               </Link>
-            )}
+            ) : isTreasurer ? (
+              <Link
+                href="/admin/finance"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-colors"
+              >
+                <Wallet className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Treasury Portal</span>
+              </Link>
+            ) : null}
 
             {(isMember || isAdmin) && (
               <Link
@@ -253,7 +262,7 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
               </>
             )}
 
-            {isAdmin && (
+            {isAdmin ? (
               <>
                 <div className="pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mb-1">
                   Administration
@@ -266,7 +275,20 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                   <span>Admin Console</span>
                 </Link>
               </>
-            )}
+            ) : isTreasurer ? (
+              <>
+                <div className="pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mb-1">
+                  Treasury
+                </div>
+                <Link
+                  href="/admin/finance"
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Treasury Portal</span>
+                </Link>
+              </>
+            ) : null}
           </nav>
         </aside>
 
@@ -381,12 +403,14 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                   isAdmin 
                     ? 'bg-primary/10 text-primary' 
-                    : isMember 
-                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' 
-                      : 'bg-muted text-muted-foreground'
+                    : isTreasurer
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : isMember 
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' 
+                        : 'bg-muted text-muted-foreground'
                 }`}>
                   <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                  {isAdmin ? 'Club Admin' : isMember ? 'Active Member' : 'Student Guest'}
+                  {isAdmin ? 'Club Admin' : isTreasurer ? 'Treasurer' : isMember ? 'Active Member' : 'Student Guest'}
                 </span>
               </div>
 
@@ -503,7 +527,7 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </Link>
 
-                {isAdmin && (
+                {isAdmin ? (
                   <Link
                     href="/admin"
                     className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary/15 transition-colors mt-2"
@@ -514,7 +538,18 @@ export function AccountShell({ user, isAdmin, isMember, children }: AccountShell
                     </div>
                     <ArrowUpRight className="w-4 h-4 text-primary" />
                   </Link>
-                )}
+                ) : isTreasurer ? (
+                  <Link
+                    href="/admin/finance"
+                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 transition-colors mt-2"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Wallet className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Treasury Portal</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+                  </Link>
+                ) : null}
               </div>
             </div>
 

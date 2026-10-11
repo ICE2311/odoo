@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   Sparkles, Menu, X, Calendar, ShoppingBag, 
   Megaphone, ShoppingCart, User, Shield, 
-  Package, Ticket, LogOut, ArrowRight 
+  Package, Ticket, LogOut, ArrowRight, Wallet
 } from 'lucide-react';
 
 interface PublicHeaderProps {
@@ -21,6 +21,7 @@ interface PublicHeaderProps {
       role: string;
     };
     isAdmin: boolean;
+    isTreasurer?: boolean;
     isMember: boolean;
   };
 }
@@ -107,7 +108,7 @@ export function PublicHeader({ caller }: PublicHeaderProps) {
                 My Orders
               </Link>
 
-              {caller.isAdmin && (
+              {caller.isAdmin ? (
                 <Link
                   href="/admin"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-colors"
@@ -115,7 +116,15 @@ export function PublicHeader({ caller }: PublicHeaderProps) {
                   <Shield className="w-3.5 h-3.5" />
                   Admin
                 </Link>
-              )}
+              ) : caller.isTreasurer ? (
+                <Link
+                  href="/admin/finance"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-colors"
+                >
+                  <Wallet className="w-3.5 h-3.5" />
+                  Treasury
+                </Link>
+              ) : null}
 
               <Link 
                 href="/account" 
@@ -287,7 +296,7 @@ export function PublicHeader({ caller }: PublicHeaderProps) {
                   <span>My Orders</span>
                 </Link>
 
-                {caller.isAdmin && (
+                {caller.isAdmin ? (
                   <Link 
                     href="/admin" 
                     className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
@@ -295,7 +304,15 @@ export function PublicHeader({ caller }: PublicHeaderProps) {
                     <Shield className="w-5 h-5 text-primary shrink-0" />
                     <span>Admin Console</span>
                   </Link>
-                )}
+                ) : caller.isTreasurer ? (
+                  <Link 
+                    href="/admin/finance" 
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <Wallet className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span>Treasury Portal</span>
+                  </Link>
+                ) : null}
 
                 <div className="pt-2">
                   <Link 

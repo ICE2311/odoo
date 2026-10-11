@@ -13,6 +13,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     <AccountShell
       user={caller.user}
       isAdmin={caller.isAdmin}
+      isTreasurer={caller.isTreasurer}
       isMember={caller.isMember}
     >
       {children}

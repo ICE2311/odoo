@@ -20,7 +20,7 @@ export const users = pgTable('users', {
   phone: text('phone'),
   studentId: text('student_id'),
   college: text('college'),
-  role: text('role', { enum: ['user', 'admin'] }).notNull().default('user'),
+  role: text('role', { enum: ['user', 'admin', 'treasurer'] }).notNull().default('user'),
   passwordHash: text('password_hash'),
   emailOptIn: boolean('email_opt_in').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

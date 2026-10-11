@@ -14,16 +14,16 @@ const userEditSchema = z.object({
   studentId: z.string().trim().max(50).optional().nullable(),
   college: z.string().trim().max(100).optional().nullable(),
   emailOptIn: z.boolean().default(true),
-  role: z.enum(['user', 'admin']).default('user'),
+  role: z.enum(['user', 'admin', 'treasurer']).default('user'),
 });
 
-export async function promoteUser(userId: string, role: 'admin' | 'user') {
+export async function promoteUser(userId: string, role: 'admin' | 'treasurer' | 'user') {
   const caller = await requireAdmin();
 
   const [targetUser] = await db.select().from(users).where(eq(users.id, userId));
   if (!targetUser) throw new Error('User not found');
 
-  if (targetUser.role === 'admin' && role === 'user') {
+  if (targetUser.role === 'admin' && role !== 'admin') {
     const adminCountRes = await db
       .select({ count: count() })
       .from(users)
@@ -58,7 +58,7 @@ export async function updateUserDetails(
     studentId?: string | null;
     college?: string | null;
     emailOptIn?: boolean;
-    role?: 'admin' | 'user';
+    role?: 'admin' | 'treasurer' | 'user';
   }
 ) {
   const caller = await requireAdmin();
@@ -67,7 +67,7 @@ export async function updateUserDetails(
   const [existingUser] = await db.select().from(users).where(eq(users.id, userId));
   if (!existingUser) throw new Error('User not found');
 
-  if (existingUser.role === 'admin' && validated.role === 'user') {
+  if (existingUser.role === 'admin' && validated.role !== 'admin') {
     const adminCountRes = await db
       .select({ count: count() })
       .from(users)

@@ -260,6 +260,53 @@ export async function recordTakingsAction(
   return { success: true };
 }
 
+export async function updateFundraiserAction(
+  fundraiserId: string,
+  data: {
+    name: string;
+    description: string;
+    date: string;
+    location: string;
+    goalPaise: number;
+    budgetPaise?: number;
+    status: 'planning' | 'active' | 'completed' | 'cancelled';
+  }
+) {
+  const caller = await requireAdmin();
+
+  const [existing] = await db.select().from(fundraisers).where(eq(fundraisers.id, fundraiserId));
+  if (!existing) throw new Error('Fundraiser not found');
+
+  const [updated] = await db
+    .update(fundraisers)
+    .set({
+      name: data.name,
+      description: data.description,
+      date: new Date(data.date),
+      location: data.location,
+      goalPaise: data.goalPaise,
+      budgetPaise: data.budgetPaise || null,
+      status: data.status,
+    })
+    .where(eq(fundraisers.id, fundraiserId))
+    .returning();
+
+  await db.insert(auditLog).values({
+    actorId: caller.user.id,
+    action: 'update_fundraiser',
+    entityType: 'fundraiser',
+    entityId: fundraiserId,
+    beforeJson: { name: existing.name, status: existing.status, goalPaise: existing.goalPaise },
+    afterJson: { name: updated.name, status: updated.status, goalPaise: updated.goalPaise },
+  });
+
+  revalidatePath('/admin/fundraisers');
+  revalidatePath(`/admin/fundraisers/${fundraiserId}`);
+  revalidatePath('/volunteer');
+  revalidatePath(`/volunteer/fundraisers/${fundraiserId}`);
+  return { success: true, fundraiser: updated };
+}
+
 export async function deleteFundraiserAction(fundraiserId: string) {
   const caller = await requireAdmin();
 
@@ -277,6 +324,7 @@ export async function deleteFundraiserAction(fundraiserId: string) {
     entityType: 'fundraiser',
     entityId: fundraiserId,
     beforeJson: { name: existing.name, slug: existing.slug },
+    afterJson: { name: null },
   });
 
   revalidatePath('/admin/fundraisers');

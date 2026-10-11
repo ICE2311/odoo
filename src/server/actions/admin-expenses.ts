@@ -2,14 +2,14 @@
 
 import { db } from '@/server/db';
 import { expenseClaims, ledgerEntries, users } from '@/server/db/schema';
-import { requireAdmin } from '@/server/auth/guards';
+import { requireFinanceAccess } from '@/server/auth/guards';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { enqueueEmail } from '@/server/services/email';
 import { revalidatePath } from 'next/cache';
 
 export async function approveClaimAction(claimId: string) {
-  const admin = await requireAdmin();
+  const admin = await requireFinanceAccess();
   
   const claim = await db.select({
     id: expenseClaims.id,
@@ -43,7 +43,7 @@ export async function approveClaimAction(claimId: string) {
 }
 
 export async function rejectClaimAction(claimId: string, reason: string) {
-  const admin = await requireAdmin();
+  const admin = await requireFinanceAccess();
   if (!reason.trim()) throw new Error("Rejection reason is required");
 
   const claim = await db.select().from(expenseClaims).where(eq(expenseClaims.id, claimId)).then(res => res[0]);
@@ -78,7 +78,7 @@ const paySchema = z.object({
 });
 
 export async function markPaidAction(claimId: string, data: z.infer<typeof paySchema>) {
-  const admin = await requireAdmin();
+  const admin = await requireFinanceAccess();
   const parsed = paySchema.parse(data);
 
   return await db.transaction(async (tx) => {
@@ -123,7 +123,7 @@ export async function markPaidAction(claimId: string, data: z.infer<typeof paySc
 }
 
 export async function bulkMarkPaidAction(claimIds: string[], data: z.infer<typeof paySchema>) {
-  const admin = await requireAdmin();
+  const admin = await requireFinanceAccess();
   const parsed = paySchema.parse(data);
 
   return await db.transaction(async (tx) => {

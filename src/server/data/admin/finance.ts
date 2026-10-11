@@ -1,10 +1,10 @@
 import { db } from '@/server/db';
 import { ledgerEntries, memberships, ticketOrders, merchOrders, expenseClaims, payments, events, tickets, fundraisers, products, productVariants, merchOrderItems, stockMovements, users, settings } from '@/server/db/schema';
 import { and, eq, gte, lte, sql, desc, count, asc, inArray } from 'drizzle-orm';
-import { requireAdmin } from '@/server/auth/guards';
+import { requireAdmin, requireFinanceAccess } from '@/server/auth/guards';
 
 export async function getFinanceDashboardData(periodStart?: Date, periodEnd?: Date) {
-  await requireAdmin();
+  await requireFinanceAccess();
   
   const dateConditions = [];
   if (periodStart) dateConditions.push(gte(ledgerEntries.occurredAt, periodStart));
@@ -73,7 +73,7 @@ export async function getFinanceDashboardData(periodStart?: Date, periodEnd?: Da
 }
 
 export async function getLedger(page = 1, pageSize = 20, filters?: { start?: Date, end?: Date, category?: string }) {
-  await requireAdmin();
+  await requireFinanceAccess();
   
   const conditions = [];
   if (filters?.start) conditions.push(gte(ledgerEntries.occurredAt, filters.start));
@@ -103,8 +103,7 @@ export async function getLedger(page = 1, pageSize = 20, filters?: { start?: Dat
 }
 
 export async function reconcile(skipAuth = false) {
-  if (!skipAuth) await requireAdmin();
-  await requireAdmin();
+  if (!skipAuth) await requireFinanceAccess();
   const mismatches: string[] = [];
 
   const membersResult = await db.select({ total: sql<number>`COALESCE(SUM(${memberships.pricePaise}), 0)` }).from(memberships).where(eq(memberships.status, 'active'));
@@ -143,8 +142,7 @@ export async function reconcile(skipAuth = false) {
 }
 
 export async function getSemesterReport(start?: Date, end?: Date, skipAuth = false) {
-  if (!skipAuth) await requireAdmin();
-  await requireAdmin();
+  if (!skipAuth) await requireFinanceAccess();
   let openingBalance = 0;
   if (start) {
     const obResult = await db.select({
@@ -185,8 +183,7 @@ export async function getSemesterReport(start?: Date, end?: Date, skipAuth = fal
 }
 
 export async function getPerEventPnL(skipAuth = false) {
-  if (!skipAuth) await requireAdmin();
-  await requireAdmin();
+  if (!skipAuth) await requireFinanceAccess();
   const eventsList = await db.select({
     id: events.id,
     title: events.title,
@@ -206,8 +203,7 @@ export async function getPerEventPnL(skipAuth = false) {
 }
 
 export async function getPerFundraiserPnL(skipAuth = false) {
-  if (!skipAuth) await requireAdmin();
-  await requireAdmin();
+  if (!skipAuth) await requireFinanceAccess();
   const fundraisersList = await db.select({
     id: fundraisers.id,
     name: fundraisers.name,
@@ -223,7 +219,7 @@ export async function getPerFundraiserPnL(skipAuth = false) {
 }
 
 export async function getMerchReport() {
-  await requireAdmin();
+  await requireFinanceAccess();
   const merchData = await db.select({
     productId: products.id,
     productName: products.name,
@@ -244,7 +240,7 @@ export async function getMerchReport() {
 }
 
 export async function getMembershipReport() {
-  await requireAdmin();
+  await requireFinanceAccess();
   const totalActiveResult = await db.select({ count: count() }).from(memberships).where(eq(memberships.status, 'active'));
   
   const duesMethods = await db.select({
