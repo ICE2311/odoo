@@ -17,7 +17,7 @@ export async function createTicketOrder(eventId: string, qty: number) {
   return await db.transaction(async (tx) => {
     // 1. Get event and verify constraints
     const eventRows = await tx.execute(
-      sql`SELECT id, status, sales_open_at, sales_close_at, capacity, seats_sold, seats_held, member_price_paise, non_member_price_paise, max_tickets_per_user 
+      sql`SELECT id, status, sales_open_at, sales_close_at, capacity, seats_sold, seats_held, member_price_paise, non_member_price_paise, max_tickets_per_user, members_only 
           FROM events 
           WHERE id = ${eventId} FOR UPDATE`
     );
@@ -25,6 +25,11 @@ export async function createTicketOrder(eventId: string, qty: number) {
     const event = eventRows.rows[0] as any;
 
     if (event.status !== 'published') throw new Error('Event not available for sale');
+
+    if (event.members_only && !caller.isMember && !caller.isAdmin) {
+      throw new Error('This event is strictly reserved for active members only.');
+    }
+
     const now = new Date();
     if (now < new Date(event.sales_open_at) || now > new Date(event.sales_close_at)) {
       throw new Error('Ticket sales are closed');
@@ -41,13 +46,15 @@ export async function createTicketOrder(eventId: string, qty: number) {
     // 2. Compute amount
     let totalPaise = 0;
     if (caller.isMember) {
-      // 1 member ticket, remaining non-member
-      totalPaise += event.member_price_paise;
-      if (qty > 1) {
-        totalPaise += event.non_member_price_paise * (qty - 1);
+      if (event.members_only) {
+        totalPaise += event.member_price_paise * qty;
+      } else {
+        totalPaise += event.member_price_paise;
+        if (qty > 1) {
+          totalPaise += event.non_member_price_paise * (qty - 1);
+        }
       }
     } else {
-      // all non-member
       totalPaise += event.non_member_price_paise * qty;
     }
 
@@ -132,7 +139,7 @@ export async function captureTicketOrder(orderId: string, razorpayPaymentId?: st
     for (let i = 0; i < order.qty; i++) {
       let priceType: 'member' | 'non_member' | 'comp' = 'non_member';
       let pricePaise = event.non_member_price_paise;
-      if (isMember && i === 0) {
+      if (isMember && (i === 0 || event.members_only)) {
         priceType = 'member';
         pricePaise = event.member_price_paise;
       }

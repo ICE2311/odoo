@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN IF NOT EXISTS "members_only" boolean DEFAULT false NOT NULL;

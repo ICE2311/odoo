@@ -227,6 +227,7 @@ export const events = pgTable('events', {
   salesOpenAt: timestamp('sales_open_at', { withTimezone: true }).notNull(),
   salesCloseAt: timestamp('sales_close_at', { withTimezone: true }).notNull(),
   maxTicketsPerUser: integer('max_tickets_per_user').notNull().default(4),
+  membersOnly: boolean('members_only').notNull().default(false),
   status: text('status', { enum: ['draft', 'published', 'cancelled', 'completed'] }).notNull().default('draft'),
   seatsSold: integer('seats_sold').notNull().default(0),
   seatsHeld: integer('seats_held').notNull().default(0),

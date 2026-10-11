@@ -79,6 +79,22 @@ async function main() {
       salesOpenAt: openDate,
       salesCloseAt: closeDate,
       status: 'published',
+      membersOnly: false,
+    },
+    {
+      title: 'Annual Leadership Retreat (Members Only)',
+      slug: 'annual-leadership-retreat',
+      description: 'Exclusive retreat and strategy mixer for active Skyline SSA members. Keynote speakers, leadership workshops, and club dinner.',
+      venue: 'Pinecrest Lodge & Conference Hall',
+      startsAt: new Date(nextMonth.getTime() + 5 * 24 * 60 * 60 * 1000),
+      endsAt: new Date(nextMonth.getTime() + 7 * 24 * 60 * 60 * 1000),
+      capacity: 60,
+      memberPricePaise: 15000, // ₹150
+      nonMemberPricePaise: 15000,
+      salesOpenAt: openDate,
+      salesCloseAt: closeDate,
+      status: 'published',
+      membersOnly: true,
     }
   ]).onConflictDoNothing();
 

@@ -28,6 +28,7 @@ interface TicketPurchaseProps {
   isMember: boolean;
   canBuy: boolean;
   buttonLabel: string;
+  membersOnly?: boolean;
 }
 
 export function TicketPurchaseForm({
@@ -39,6 +40,7 @@ export function TicketPurchaseForm({
   isMember,
   canBuy,
   buttonLabel,
+  membersOnly = false,
 }: TicketPurchaseProps) {
   const router = useRouter();
   const maxAllowed = Math.min(maxTicketsPerUser, Math.max(availableSeats, 1));
@@ -51,9 +53,13 @@ export function TicketPurchaseForm({
   // Compute total
   let totalPaise = 0;
   if (isMember) {
-    totalPaise += memberPricePaise;
-    if (qty > 1) {
-      totalPaise += nonMemberPricePaise * (qty - 1);
+    if (membersOnly) {
+      totalPaise += memberPricePaise * qty;
+    } else {
+      totalPaise += memberPricePaise;
+      if (qty > 1) {
+        totalPaise += nonMemberPricePaise * (qty - 1);
+      }
     }
   } else {
     totalPaise += nonMemberPricePaise * qty;
@@ -246,8 +252,9 @@ export function TicketPurchaseForm({
         {isMember ? (
           <div className="text-[11px] text-success flex items-center gap-1 font-medium">
             <Sparkles className="w-3.5 h-3.5" />
-            Member rate applied ({formatPaise(memberPricePaise)}
-            {qty > 1 ? ` + ${qty - 1} × ${formatPaise(nonMemberPricePaise)}` : ''})
+            {membersOnly 
+              ? `Exclusive member rate applied (${formatPaise(memberPricePaise)} × ${qty})`
+              : `Member rate applied (${formatPaise(memberPricePaise)}${qty > 1 ? ` + ${qty - 1} × ${formatPaise(nonMemberPricePaise)}` : ''})`}
           </div>
         ) : (
           <div className="text-[11px] text-muted-foreground">

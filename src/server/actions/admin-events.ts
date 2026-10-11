@@ -23,6 +23,7 @@ const eventFormSchema = z.object({
   memberPricePaise: z.coerce.number().int().min(0, 'Member price cannot be negative'),
   nonMemberPricePaise: z.coerce.number().int().min(0, 'Non-member price cannot be negative'),
   maxTicketsPerUser: z.coerce.number().int().min(1).max(20).default(4),
+  membersOnly: z.boolean().default(false),
   status: z.enum(['draft', 'published', 'cancelled', 'completed']).default('draft'),
 });
 
@@ -52,6 +53,7 @@ export async function createEventAction(input: any) {
       memberPricePaise: data.memberPricePaise,
       nonMemberPricePaise: data.nonMemberPricePaise,
       maxTicketsPerUser: data.maxTicketsPerUser,
+      membersOnly: data.membersOnly ?? false,
       status: data.status,
     })
     .returning();
@@ -100,6 +102,7 @@ export async function updateEventAction(id: string, input: any) {
       memberPricePaise: data.memberPricePaise,
       nonMemberPricePaise: data.nonMemberPricePaise,
       maxTicketsPerUser: data.maxTicketsPerUser,
+      membersOnly: data.membersOnly ?? false,
       status: data.status,
       updatedAt: new Date(),
     })

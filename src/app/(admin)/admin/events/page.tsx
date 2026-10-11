@@ -34,7 +34,14 @@ export default async function AdminEventsPage() {
               {events.map((event: any) => (
                 <tr key={event.id} className="hover:bg-muted/80 even:bg-muted/40 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="font-medium text-card-foreground">{event.title}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-card-foreground">{event.title}</span>
+                      {event.membersOnly && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                          ★ Members Only
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                       <Calendar className="w-3 h-3" /> {new Date(event.startsAt).toLocaleDateString()}
                     </div>

@@ -30,6 +30,11 @@ export default async function EventsPage() {
               {event.bannerUrl ? (
                 <div className="aspect-[16/9] w-full bg-muted relative overflow-hidden">
                   <img src={event.bannerUrl} alt={event.title} className="w-full h-full object-cover transition-transform hover:scale-105 duration-500" />
+                  {event.membersOnly && (
+                    <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur px-3 py-1 rounded-full text-xs shadow-sm flex items-center gap-1">
+                      ★ Members Only
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 bg-background/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
                     {new Date(event.startsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </div>
@@ -37,6 +42,11 @@ export default async function EventsPage() {
               ) : (
                 <div className="aspect-[16/9] w-full gradient-primary relative overflow-hidden flex items-center justify-center">
                   <Calendar className="w-16 h-16 text-white/20" />
+                  {event.membersOnly && (
+                    <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur px-3 py-1 rounded-full text-xs shadow-sm flex items-center gap-1">
+                      ★ Members Only
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm">
                     {new Date(event.startsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </div>

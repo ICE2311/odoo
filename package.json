@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx --env-file=.env src/server/db/migrate.ts",
     "db:seed": "tsx --env-file=.env src/server/db/seed.ts",
     "db:reset:test": "tsx --env-file=.env src/server/db/reset-test.ts",
     "typecheck": "tsc --noEmit",
