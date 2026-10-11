@@ -73,7 +73,7 @@ function LoginForm() {
 
   if (status === 'success' && mode === 'magic') {
     return (
-      <div className="max-w-md mx-auto mt-24 text-center space-y-6">
+      <div className="max-w-md mx-auto mt-12 sm:mt-20 mb-20 px-4 text-center space-y-6">
         <div className="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-8 h-8" />
         </div>
@@ -89,8 +89,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-24">
-      <div className="bg-card border rounded-[var(--radius-xl)] shadow-sm p-8 space-y-6 card-hover">
+    <div className="max-w-md mx-auto mt-12 sm:mt-20 mb-20 px-4">
+      <div className="bg-card border rounded-3xl shadow-sm p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
           <p className="text-muted-foreground">Sign in to your Skyline account</p>

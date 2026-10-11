@@ -391,7 +391,7 @@ export function AccountShell({ user, isAdmin, isTreasurer, isMember, children }:
                 <button
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />

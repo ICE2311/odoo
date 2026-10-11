@@ -12,7 +12,7 @@ export default async function AdminFundraiserPage({
   const data = await getFundraiserBoard(id);
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+    <div className="max-w-6xl mx-auto space-y-6">
       <AdminFundraiserClient data={data} currentUser={caller.user} />
     </div>
   );

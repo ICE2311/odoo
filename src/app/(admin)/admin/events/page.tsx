@@ -13,7 +13,7 @@ export default async function AdminEventsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Events Management</h1>
           <p className="text-muted-foreground text-sm">Create and manage upcoming events and track ticket sales.</p>
         </div>
-        <Link href="/admin/events/new" className="bg-primary text-primary-foreground px-4 py-2 rounded-[var(--radius-md)] hover:bg-primary transition-colors flex items-center gap-2 text-sm font-medium shadow-sm">
+        <Link href="/admin/events/new" className="bg-primary text-primary-foreground px-4 py-2 rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm font-semibold shadow-xs">
           <Plus className="w-4 h-4" /> New Event
         </Link>
       </div>

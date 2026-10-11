@@ -670,7 +670,7 @@ export function LandingPageClient({ caller }: LandingPageClientProps) {
               <Link href={ctaLink}>
                 <Button 
                   size="lg" 
-                  className="w-full sm:w-auto h-13 px-8 rounded-2xl bg-white hover:bg-white/90 text-primary font-bold text-base shadow-xl hover:-translate-y-0.5 transition-all"
+                  className="w-full sm:w-auto h-13 px-8 rounded-2xl bg-white hover:bg-white/90 text-primary font-bold text-base shadow-xl hover:-translate-y-0.5 transition-all duration-200"
                 >
                   {ctaText}
                 </Button>
@@ -680,7 +680,7 @@ export function LandingPageClient({ caller }: LandingPageClientProps) {
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="w-full sm:w-auto h-13 px-7 rounded-2xl border-white/30 text-white bg-white/10 hover:bg-white/20 font-semibold text-base backdrop-blur-xs hover:-translate-y-0.5 transition-all"
+                  className="w-full sm:w-auto h-13 px-7 rounded-2xl border-white/30 text-white bg-white/10 hover:bg-white/20 font-semibold text-base backdrop-blur-xs hover:-translate-y-0.5 transition-all duration-200"
                 >
                   Browse Events
                 </Button>

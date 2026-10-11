@@ -200,11 +200,11 @@ export function PublicHeader({ caller }: PublicHeaderProps) {
       {/* Mobile Menu Backdrop & Drawer */}
       {isOpen && (
         <div 
-          className="fixed inset-0 top-16 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200"
+          className="fixed inset-0 top-16 bg-black/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         >
           <div 
-            className="bg-card border-b border-border shadow-2xl p-4 sm:p-6 space-y-5 max-h-[calc(100vh-4rem)] overflow-y-auto animate-in slide-in-from-top-4 duration-200"
+            className="bg-card border-b border-border shadow-2xl p-4 sm:p-6 pb-8 safe-area-bottom space-y-5 max-h-[calc(100vh-4rem)] overflow-y-auto animate-in slide-in-from-top-4 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Primary Site Navigation */}

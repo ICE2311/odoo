@@ -75,7 +75,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 sm:mt-24 mb-24 px-4">
+    <div className="max-w-md mx-auto mt-12 sm:mt-20 mb-20 px-4">
       <div className="bg-card border rounded-3xl shadow-sm p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">

@@ -26,10 +26,10 @@ export default async function EventsPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {events.map(event => (
-            <Card key={event.id} className="overflow-hidden border-border bg-card hover:border-primary/30 card-hover flex flex-col">
+            <Card key={event.id} className="group overflow-hidden border-border bg-card hover:border-primary/30 card-hover flex flex-col">
               {event.bannerUrl ? (
                 <div className="aspect-[16/9] w-full bg-muted relative overflow-hidden">
-                  <img src={event.bannerUrl} alt={event.title} className="w-full h-full object-cover transition-transform hover:scale-105 duration-500" />
+                  <img src={event.bannerUrl} alt={event.title} className="w-full h-full object-cover img-zoom" />
                   {event.membersOnly && (
                     <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur px-3 py-1 rounded-full text-xs shadow-sm flex items-center gap-1">
                       ★ Members Only

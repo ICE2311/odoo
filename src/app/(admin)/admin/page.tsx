@@ -12,25 +12,25 @@ export default async function AdminDashboardPage() {
   const data = await getOverviewDashboardData();
 
   return (
-    <div className="p-4 max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Admin Overview Dashboard</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link href="/admin/finance" className="block border border-border p-4 rounded-[var(--radius-xl)] bg-card shadow-sm hover:border-primary">
+        <Link href="/admin/finance" className="block border border-border p-4 rounded-2xl bg-card shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50">
           <div className="text-sm text-muted-foreground">Balance</div>
           <div className="text-2xl font-bold">₹{(data.balance / 100).toFixed(2)}</div>
         </Link>
-        <Link href="/admin/users" className="block border border-border p-4 rounded-[var(--radius-xl)] bg-card shadow-sm hover:border-primary">
+        <Link href="/admin/users" className="block border border-border p-4 rounded-2xl bg-card shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50">
           <div className="text-sm text-muted-foreground">Active Members</div>
           <div className="text-2xl font-bold text-success">{data.activeMembers}</div>
           <div className="text-xs text-warning-foreground mt-1">{data.expiringMembers} expiring in 30d</div>
         </Link>
-        <Link href="/admin/expenses" className="block border border-border p-4 rounded-[var(--radius-xl)] bg-card shadow-sm hover:border-primary">
+        <Link href="/admin/expenses" className="block border border-border p-4 rounded-2xl bg-card shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50">
           <div className="text-sm text-muted-foreground">Pending Claims</div>
           <div className="text-2xl font-bold text-destructive">{data.pendingClaims.count}</div>
           <div className="text-xs text-muted-foreground mt-1">Total: ₹{(data.pendingClaims.total / 100).toFixed(2)}</div>
         </Link>
-        <Link href="/admin/events" className="block border border-border p-4 rounded-[var(--radius-xl)] bg-card shadow-sm hover:border-primary">
+        <Link href="/admin/events" className="block border border-border p-4 rounded-2xl bg-card shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50">
           <div className="text-sm text-muted-foreground">Upcoming Events</div>
           <div className="text-2xl font-bold text-primary">{data.upcomingEvents.length}</div>
         </Link>
@@ -38,10 +38,10 @@ export default async function AdminDashboardPage() {
 
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <div className="border border-border border-border rounded-[var(--radius-xl)] bg-card shadow-sm-sm overflow-hidden">
+          <div className="border border-border rounded-2xl bg-card shadow-xs overflow-hidden">
             <div className="bg-muted px-4 py-2 border-b border-border font-bold flex justify-between">
               <span>Upcoming Events</span>
-              <Link href="/admin/events" className="text-primary text-sm font-normal">View all</Link>
+              <Link href="/admin/events" className="text-primary text-sm font-normal hover:underline">View all</Link>
             </div>
             <div className="p-4 space-y-2">
               {data.upcomingEvents.map(e => (
@@ -54,10 +54,10 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="border border-border border-border rounded-[var(--radius-xl)] bg-card shadow-sm-sm overflow-hidden">
+          <div className="border border-border rounded-2xl bg-card shadow-xs overflow-hidden">
             <div className="bg-muted px-4 py-2 border-b border-border font-bold flex justify-between">
               <span className="text-destructive">Low Stock Variants</span>
-              <Link href="/admin/shop" className="text-primary text-sm font-normal">Manage</Link>
+              <Link href="/admin/shop" className="text-primary text-sm font-normal hover:underline">Manage</Link>
             </div>
             <div className="p-4 space-y-2">
               {data.lowStock.map(s => (
@@ -72,10 +72,10 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="border border-border border-border rounded-[var(--radius-xl)] bg-card shadow-sm-sm overflow-hidden">
+          <div className="border border-border rounded-2xl bg-card shadow-xs overflow-hidden">
             <div className="bg-muted px-4 py-2 border-b border-border font-bold flex justify-between">
               <span className="text-warning-foreground">At-Risk Fundraisers</span>
-              <Link href="/admin/fundraisers" className="text-primary text-sm font-normal">View all</Link>
+              <Link href="/admin/fundraisers" className="text-primary text-sm font-normal hover:underline">View all</Link>
             </div>
             <div className="p-4 space-y-2">
               {data.atRiskFundraisers.map(f => (
@@ -91,16 +91,16 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="border border-border border-border rounded-[var(--radius-xl)] bg-card shadow-sm-sm overflow-hidden">
+          <div className="border border-border rounded-2xl bg-card shadow-xs overflow-hidden">
             <div className="bg-muted px-4 py-2 border-b border-border font-bold flex justify-between">
               <span>Latest Announcements</span>
-              <Link href="/admin/announcements" className="text-primary text-sm font-normal">View all</Link>
+              <Link href="/admin/announcements" className="text-primary text-sm font-normal hover:underline">View all</Link>
             </div>
             <div className="p-4 space-y-2">
               {data.announcements.map((a: any) => (
                 <div key={a.id} className="flex justify-between items-center border-b border-border pb-2 last:border-0 last:pb-0">
                   <span className="font-medium truncate">{a.title}</span>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-[var(--radius-md)]">{a.status}</span>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">{a.status}</span>
                 </div>
               ))}
               {data.announcements.length === 0 && <div className="text-muted-foreground text-sm">No announcements.</div>}

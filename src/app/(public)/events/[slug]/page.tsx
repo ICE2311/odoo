@@ -79,19 +79,19 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ s
 
       {/* Banner */}
       {event.bannerUrl ? (
-        <div className="w-full aspect-[21/9] rounded-[var(--radius-xl)] overflow-hidden shadow-sm relative">
+        <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs relative">
           <img src={event.bannerUrl} alt={event.title} className="w-full h-full object-cover" />
           {event.membersOnly && (
-            <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur px-3 py-1 rounded-full text-xs shadow-sm flex items-center gap-1">
+            <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur-md px-3 py-1 rounded-full text-xs shadow-xs flex items-center gap-1">
               ★ Members Only
             </div>
           )}
         </div>
       ) : (
-        <div className="w-full aspect-[21/9] rounded-[var(--radius-xl)] gradient-hero shadow-sm flex items-center justify-center border border-border relative">
+        <div className="w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-3xl gradient-hero shadow-xs flex items-center justify-center border border-border relative">
           <Calendar className="w-24 h-24 text-primary/20" />
           {event.membersOnly && (
-            <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur px-3 py-1 rounded-full text-xs shadow-sm flex items-center gap-1">
+            <div className="absolute top-4 left-4 bg-amber-500/95 text-white font-bold backdrop-blur-md px-3 py-1 rounded-full text-xs shadow-xs flex items-center gap-1">
               ★ Members Only
             </div>
           )}
@@ -216,7 +216,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ s
               <div className="mt-6 space-y-3">
                 <Link
                   href={`/login?next=/events/${slug}`}
-                  className="flex items-center justify-center w-full bg-primary text-primary-foreground font-semibold px-4 py-3 rounded-[var(--radius-md)] hover:opacity-90 shadow-sm transition-opacity"
+                  className="flex items-center justify-center w-full bg-primary text-primary-foreground font-semibold px-4 py-3 rounded-xl hover:opacity-90 shadow-xs transition-opacity"
                 >
                   Login to Buy
                 </Link>

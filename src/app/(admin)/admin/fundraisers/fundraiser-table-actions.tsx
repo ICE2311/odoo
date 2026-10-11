@@ -35,21 +35,20 @@ export function FundraiserTableActions({ fundraiserId, fundraiserName }: Fundrai
     <div className="flex items-center justify-end gap-2">
       <Link
         href={`/admin/fundraisers/${fundraiserId}`}
-        className="px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 rounded-lg transition-colors inline-flex items-center gap-1"
+        className="px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 rounded-xl transition-colors inline-flex items-center gap-1.5"
       >
-        Manage
-        <ExternalLink className="w-3 h-3" />
+        <span>Manage</span>
+        <ExternalLink className="w-3.5 h-3.5" />
       </Link>
       <button
         type="button"
         onClick={handleDelete}
         disabled={loading}
         title="Delete Fundraiser"
-        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-50"
+        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors disabled:opacity-50"
       >
         {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
       </button>
     </div>
   );
 }
-

@@ -51,7 +51,7 @@ export default async function FinancePage({
   const ledger = await getLedger(page, 20, { start: periodStart, end: periodEnd, category: categoryFilter });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <div className="max-w-6xl mx-auto space-y-8">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

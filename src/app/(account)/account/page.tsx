@@ -88,10 +88,10 @@ export default async function AccountPage() {
         {sections.map((section) => {
           const Icon = section.icon;
           return (
-            <Link key={section.href} href={section.href} className="group outline-none">
-              <Card className="p-6 h-full border-border bg-card hover:border-primary/30 card-hover cursor-pointer transition-all">
+            <Link key={section.href} href={section.href} className="group outline-none block">
+              <Card className="p-6 h-full border-border bg-card hover:border-primary/30 card-hover cursor-pointer">
                 <div className="flex flex-col gap-4 h-full">
-                  <div className={`w-14 h-14 rounded-[var(--radius-lg)] ${section.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <div className={`w-14 h-14 rounded-2xl ${section.color} flex items-center justify-center group-hover:scale-105 transition-transform duration-200`}>
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>

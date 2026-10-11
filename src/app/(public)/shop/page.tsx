@@ -49,10 +49,10 @@ export default async function ShopPage() {
 
             return (
               <Link key={item.id} href={`/shop/${item.slug || item.id}`} className="group outline-none block">
-                <Card className="overflow-hidden border-border bg-card hover:border-primary/30 card-hover h-full flex flex-col transition-all">
+                <Card className="overflow-hidden border-border bg-card hover:border-primary/30 card-hover h-full flex flex-col">
                   {item.imageUrls?.[0] ? (
                     <div className="aspect-[4/5] w-full bg-muted relative overflow-hidden">
-                      <img src={item.imageUrls?.[0]} alt={item.name} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700" />
+                      <img src={item.imageUrls?.[0]} alt={item.name} className="w-full h-full object-cover img-zoom" />
                       {availableCount === 0 && (
                         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">
                           <span className="px-4 py-2 bg-background text-foreground font-bold rounded-full text-sm shadow-lg">Out of Stock</span>

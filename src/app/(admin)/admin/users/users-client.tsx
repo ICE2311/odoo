@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import {
   Users,
   Search,
@@ -99,6 +99,18 @@ export function UsersClient({
     setEditingUser(null);
     setStatusMessage(null);
   };
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (editingUser) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [editingUser]);
 
   const handleDeleteUser = (u: UserRecord) => {
     if (!window.confirm(`Are you sure you want to permanently delete user "${u.name || u.email}"? This cannot be undone.`)) return;
@@ -538,8 +550,14 @@ export function UsersClient({
 
       {/* Edit User & Role Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-[var(--radius-xl)] shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={closeEditModal}
+        >
+          <div 
+            className="bg-card border border-border rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="p-5 border-b border-border flex justify-between items-center bg-muted">
               <div>
@@ -550,7 +568,8 @@ export function UsersClient({
               </div>
               <button
                 onClick={closeEditModal}
-                className="text-muted-foreground hover:text-foreground p-1 rounded-md"
+                className="text-muted-foreground hover:text-foreground p-1.5 rounded-xl hover:bg-muted/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>

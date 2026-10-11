@@ -200,7 +200,7 @@ export default function MembershipPage() {
   const priceFormatted = `₹${(data?.pricePaise ?? 50000) / 100}`;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pb-12">
+    <div className="max-w-3xl mx-auto space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Club Membership</h1>

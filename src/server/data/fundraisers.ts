@@ -153,7 +153,7 @@ export async function getAdminFundraisers() {
   const caller = await requireAdmin();
 
   const rows = await db.execute(sql`
-    SELECT f.id, f.name, f.date, f.status, f.goal_paise,
+    SELECT f.id, f.name, f.location, f.date, f.status, f.goal_paise,
            COALESCE((SELECT SUM(amount_paise) FROM fundraiser_takings WHERE fundraiser_id = f.id), 0) as raised_paise,
            (SELECT COUNT(*) FROM fundraiser_tasks WHERE fundraiser_id = f.id) as tasks_total,
            (SELECT COUNT(*) FROM fundraiser_tasks WHERE fundraiser_id = f.id AND status = 'done') as tasks_done,
@@ -165,10 +165,13 @@ export async function getAdminFundraisers() {
   return rows.rows.map((r: any) => ({
     id: r.id,
     name: r.name,
+    location: r.location,
     date: new Date(r.date),
     status: r.status,
     goalPaise: Number(r.goal_paise),
     raisedPaise: Number(r.raised_paise),
+    tasksTotal: Number(r.tasks_total),
+    tasksDone: Number(r.tasks_done),
     onTrack: computeOnTrackStatus(new Date(r.date), Number(r.goal_paise), Number(r.raised_paise), Number(r.tasks_total), Number(r.tasks_done), Boolean(r.has_overdue)),
   }));
 }

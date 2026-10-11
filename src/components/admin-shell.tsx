@@ -158,7 +158,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
         <div className="p-3 border-t border-border bg-card space-y-1">
           <div className="px-3 py-1.5 flex items-center justify-between text-xs text-muted-foreground">
             <span className="truncate font-semibold text-foreground max-w-[130px]">{user.name || user.email}</span>
-            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary">
               {isTreasurer ? 'Treasurer' : 'Admin'}
             </span>
           </div>
@@ -166,14 +166,14 @@ export function AdminShell({ user, children }: AdminShellProps) {
           <div className="grid grid-cols-2 gap-1 pt-1">
             <Link
               href="/account"
-              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <UserCheck className="w-3.5 h-3.5" />
               Member
             </Link>
             <Link
               href="/"
-              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <Globe className="w-3.5 h-3.5" />
               Site
@@ -182,7 +182,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
           <Link
             href="/api/auth/signout"
-            className="flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="flex items-center justify-center gap-1.5 w-full px-3 py-1.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out
@@ -192,7 +192,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
       {/* ─── MAIN CONTENT VIEWPORT ─── */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-card border-b border-border sticky top-0 z-30">
+        <header className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-30">
           <div className="flex items-center gap-3">
             {/* Mobile Hamburger Drawer Trigger */}
             <button
@@ -244,7 +244,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
       {/* ─── MOBILE BOTTOM BAR ─── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-md z-40 safe-area-bottom">
-        <div className="flex justify-around items-center px-1 py-2">
+        <div className="flex justify-around items-center px-2 py-2">
           {isTreasurer ? (
             <>
               <Link 
@@ -378,7 +378,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
                 <button
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />

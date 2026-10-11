@@ -9,7 +9,7 @@ export default async function ProfilePage() {
   const profile = await getMyProfile();
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto pb-12">
+    <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex justify-between items-end border-b border-border pb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
